@@ -29,6 +29,7 @@ fun BottomNavigation(navController: NavController) {
         items.forEachIndexed { index, item ->
             NavigationBarItem(
                 colors = NavigationBarItemDefaults.colors(
+                    //ripple 제거
                     indicatorColor = Color.Transparent,
                     selectedIconColor = Color.White,
                     unselectedIconColor = Color(0xFFA6A6A6),
