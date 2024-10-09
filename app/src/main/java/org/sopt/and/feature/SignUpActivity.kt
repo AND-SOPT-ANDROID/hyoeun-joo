@@ -1,6 +1,8 @@
 package org.sopt.and.feature
 
 import android.os.Bundle
+import android.util.Log
+import android.util.Patterns
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -27,13 +29,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.sopt.and.R
 import org.sopt.and.component.CustomTextField
 import org.sopt.and.component.DividerWithText
+import org.sopt.and.core.navigateWithUserInfo
+import org.sopt.and.core.showToast
+import org.sopt.and.feature.model.UserInfo
+import org.sopt.and.feature.usecase.UserInfoUseCase
 import org.sopt.and.ui.theme.ANDANDROIDTheme
 import org.sopt.and.util.extenstion.applyColorSpan
 
@@ -43,7 +51,7 @@ class SignUpActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ANDANDROIDTheme {
-
+                SignUpScreen()
             }
         }
     }
@@ -51,9 +59,13 @@ class SignUpActivity : ComponentActivity() {
 
 @Composable
 fun SignUpScreen() {
+    val userInfoUseCase = UserInfoUseCase()
     var signUpEmail by remember { mutableStateOf("") }
     var signUpPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    var userInfo by remember { mutableStateOf<UserInfo?>(null) }
 
     Column(
         modifier = Modifier
@@ -73,7 +85,7 @@ fun SignUpScreen() {
                     .background(color = Color(0xFF1B1B1B))
             ) {
                 Text(
-                    "회원가입",
+                    stringResource(R.string.sign_up),
                     color = Color.White,
                     modifier = Modifier.align(Alignment.Center)
                 )
@@ -88,14 +100,14 @@ fun SignUpScreen() {
             }
             Spacer(modifier = Modifier.padding(top = 10.dp))
             BasicText(
-                text = "이메일과 비밀번호만으로".applyColorSpan(
+                text = stringResource(R.string.signup_join_with_email_password).applyColorSpan(
                     start = 0,
                     end = 9,
                     color = Color.White,
                 ),
             )
             BasicText(
-                text = "Wavve를 즐길 수 있어요!".applyColorSpan(
+                text = stringResource(R.string.signup_join_with_wavve).applyColorSpan(
                     start = 0,
                     end = 11,
                     color = Color.White,
@@ -108,7 +120,7 @@ fun SignUpScreen() {
                 placeholder = "wavve@example.com"
             )
             Text(
-                "! 로그인,비밀번호 찾기,알림에 사용되니 정확한 이메일을 입력해주세요.",
+                stringResource(R.string.signup_id_description),
                 color = Color(0xFFA5A5A5),
                 fontSize = 14.sp
             )
@@ -120,7 +132,7 @@ fun SignUpScreen() {
                 CustomTextField(
                     value = signUpPassword,
                     onValueChange = { signUpPassword = it },
-                    placeholder = "Wavve 비밀번호 설정",
+                    placeholder = stringResource(R.string.login_setting_password),
                     passwordVisible = passwordVisible
                 )
                 Text(
@@ -132,12 +144,12 @@ fun SignUpScreen() {
                 )
             }
             Text(
-                "! 비밀번호는 8~20자 이내로 영문 대소문자,숫자, 특수문자 중 3가지 이상 혼영하여 입력해 주세요.",
+                stringResource(R.string.signup_password_description),
                 color = Color(0xFFA5A5A5),
                 fontSize = 14.sp
             )
             Spacer(modifier = Modifier.padding(top = 30.dp))
-            DividerWithText("또는 다른 서비스 계정으로 가입")
+            DividerWithText(stringResource(R.string.login_join_with_social_account))
 
             Image(
                 painter = painterResource(id = R.drawable.ic_social_login),
@@ -145,14 +157,21 @@ fun SignUpScreen() {
             )
             Spacer(modifier = Modifier.padding(top = 20.dp))
             Text(
-                "SNS계정으로 간편하게 가입하여 서비스를 이용하실 수 있습니다. 기존 POOQ 계정 또는 Wavve 계정과는 연동되지 않으니 이용에 참고하세요.",
+                stringResource(R.string.login_join_social_account_description),
                 color = Color(0xFFA5A5A5),
                 fontSize = 12.sp
             )
         }
         Spacer(modifier = Modifier.weight(1f))
 
-        NavigateToLogin{}
+        NavigateToLogin{
+            if (userInfoUseCase.isValidEmail(signUpEmail) && userInfoUseCase.isValidPassword(signUpPassword)) {
+                userInfo = UserInfo(id = signUpEmail, password = signUpPassword)
+                navigateWithUserInfo<LoginActivity>(context,userInfo)
+            } else {
+               context.showToast(context.getString(R.string.signup_login_error_message))
+            }
+        }
 
     }
 
@@ -174,7 +193,7 @@ fun NavigateToLogin(onClick: () -> Unit) {
         contentPadding = PaddingValues(16.dp)
 
     ) {
-        Text("Wavve 회원가입")
+        Text(stringResource(R.string.signup_join_wavve))
 
     }
 }
