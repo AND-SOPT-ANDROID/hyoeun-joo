@@ -1,8 +1,6 @@
 package org.sopt.and.feature
 
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -25,6 +23,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -41,6 +41,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.sopt.and.R
 import org.sopt.and.component.CustomTextField
 import org.sopt.and.component.DividerWithText
@@ -77,6 +80,7 @@ fun LoginScreen(userInfo: UserInfo?) {
     var passwordVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Column(
         modifier = Modifier
@@ -109,8 +113,10 @@ fun LoginScreen(userInfo: UserInfo?) {
             )
         }
         Spacer(modifier = Modifier.padding(top = 30.dp))
-        CustomTextField(value = logInEmail, onValueChange = { logInEmail = it },
-            stringResource(R.string.login_email_id))
+        CustomTextField(
+            value = logInEmail, onValueChange = { logInEmail = it },
+            stringResource(R.string.login_email_id)
+        )
         Spacer(modifier = Modifier.padding(top = 10.dp))
         Box(
             modifier = Modifier.fillMaxWidth(),
@@ -131,17 +137,18 @@ fun LoginScreen(userInfo: UserInfo?) {
         }
         Spacer(modifier = Modifier.padding(top = 30.dp))
         NavigateToMain {
-            if (userInfo != null && logInEmail == userInfo.id && logInPassword == userInfo!!.password) {
+            if (logInEmail.isNotBlank() && logInPassword.isNotBlank() && logInEmail == userInfo?.id && logInPassword == userInfo.password) {
 
                 navigateWithUserInfo<MyPageActivity>(context, userInfo)
             } else {
-                Toast.makeText(context,
-                    context.getString(R.string.login_no_member_info), Toast.LENGTH_SHORT).show()
-
+                CoroutineScope(Dispatchers.Main).launch {
+                    snackbarHostState.showSnackbar(context.getString(R.string.login_no_member_info))
+                }
             }
         }
         Spacer(modifier = Modifier.padding(top = 20.dp))
-        ThreeTextsWithDividers(modifier = Modifier.fillMaxWidth(),
+        ThreeTextsWithDividers(
+            modifier = Modifier.fillMaxWidth(),
             stringResource(R.string.login_find_id),
             stringResource(R.string.login_setting_password_again), stringResource(R.string.sign_up)
         )
@@ -156,6 +163,8 @@ fun LoginScreen(userInfo: UserInfo?) {
             color = Color(0xFFA5A5A5),
             fontSize = 12.sp
         )
+        SnackbarHost(hostState = snackbarHostState)
+
     }
 }
 
