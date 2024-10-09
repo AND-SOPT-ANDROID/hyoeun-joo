@@ -15,6 +15,7 @@
     <string name="login_join_social_account_description">SNS계정으로 간편하게 가입하여 서비스를 이용하실 수 있습니다. 기존 POOQ 계정 또는 Wavve 계정과는 연동되지 않으니 이용에 참고하세요.</string>
     <string name="login">로그인</string>
     <string name="login_email_id">이메일 주소 또는 아이디</string>
+    <string name="login_success">로그인 성공!</string>
 
     <!--        SignUp-->
     <string name="signup_join_with_email_password">이메일과 비밀번호만으로</string>
