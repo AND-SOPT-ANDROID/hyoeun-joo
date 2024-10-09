@@ -1,8 +1,6 @@
 package org.sopt.and.feature
 
 import android.os.Bundle
-import android.util.Log
-import android.util.Patterns
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -34,9 +32,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import org.sopt.and.R
 import org.sopt.and.component.CustomTextField
+import org.sopt.and.component.DescriptionText
 import org.sopt.and.component.DividerWithText
 import org.sopt.and.core.navigateWithUserInfo
 import org.sopt.and.core.showToast
@@ -78,26 +76,7 @@ fun SignUpScreen() {
                 .padding(horizontal = 10.dp)
         ) {
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp)
-                    .background(color = Color(0xFF1B1B1B))
-            ) {
-                Text(
-                    stringResource(R.string.sign_up),
-                    color = Color.White,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-                Image(
-                    painter = painterResource(id = R.drawable.ic_close_white_24),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .padding(vertical = 16.dp)
-                )
-
-            }
+            SignUpTopBar()
             Spacer(modifier = Modifier.padding(top = 10.dp))
             BasicText(
                 text = stringResource(R.string.signup_join_with_email_password).applyColorSpan(
@@ -119,11 +98,7 @@ fun SignUpScreen() {
                 onValueChange = { signUpEmail = it },
                 placeholder = "wavve@example.com"
             )
-            Text(
-                stringResource(R.string.signup_id_description),
-                color = Color(0xFFA5A5A5),
-                fontSize = 14.sp
-            )
+            DescriptionText(stringResource(R.string.signup_id_description))
             Spacer(modifier = Modifier.padding(top = 20.dp))
             Box(
                 modifier = Modifier.fillMaxWidth(),
@@ -143,11 +118,7 @@ fun SignUpScreen() {
                         .clickable { passwordVisible = !passwordVisible }
                 )
             }
-            Text(
-                stringResource(R.string.signup_password_description),
-                color = Color(0xFFA5A5A5),
-                fontSize = 14.sp
-            )
+            DescriptionText(stringResource(R.string.signup_password_description))
             Spacer(modifier = Modifier.padding(top = 30.dp))
             DividerWithText(stringResource(R.string.login_join_with_social_account))
 
@@ -156,20 +127,21 @@ fun SignUpScreen() {
                 contentDescription = "Social Login",
             )
             Spacer(modifier = Modifier.padding(top = 20.dp))
-            Text(
-                stringResource(R.string.login_join_social_account_description),
-                color = Color(0xFFA5A5A5),
-                fontSize = 12.sp
-            )
+            DescriptionText(stringResource(R.string.login_join_social_account_description))
         }
         Spacer(modifier = Modifier.weight(1f))
 
-        NavigateToLogin{
-            if (userInfoUseCase.isValidEmail(signUpEmail) && userInfoUseCase.isValidPassword(signUpPassword)) {
+        NavigateToLogin(
+            backgroundColor = buttonEnableBackgroundColor(signUpEmail, signUpPassword)
+        ) {
+            if (userInfoUseCase.isValidEmail(signUpEmail) && userInfoUseCase.isValidPassword(
+                    signUpPassword
+                )
+            ) {
                 userInfo = UserInfo(id = signUpEmail, password = signUpPassword)
-                navigateWithUserInfo<LoginActivity>(context,userInfo)
+                navigateWithUserInfo<LoginActivity>(context, userInfo)
             } else {
-               context.showToast(context.getString(R.string.signup_login_error_message))
+                context.showToast(context.getString(R.string.signup_login_error_message))
             }
         }
 
@@ -179,13 +151,36 @@ fun SignUpScreen() {
 
 
 @Composable
-fun NavigateToLogin(onClick: () -> Unit) {
+fun SignUpTopBar() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp)
+            .background(color = Color(0xFF1B1B1B))
+    ) {
+        Text(
+            stringResource(R.string.sign_up),
+            color = Color.White,
+            modifier = Modifier.align(Alignment.Center)
+        )
+        Image(
+            painter = painterResource(id = R.drawable.ic_close_white_24),
+            contentDescription = null,
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(vertical = 16.dp)
+        )
+    }
+}
+
+@Composable
+fun NavigateToLogin(backgroundColor: Color, onClick: () -> Unit) {
     TextButton(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         colors = ButtonColors(
             contentColor = Color.White,
-            containerColor = Color(0xFF717171),
+            containerColor = backgroundColor,
             disabledContentColor = Color(0xFF717171),
             disabledContainerColor = Color(0xFF717171),
         ),
@@ -195,6 +190,14 @@ fun NavigateToLogin(onClick: () -> Unit) {
     ) {
         Text(stringResource(R.string.signup_join_wavve))
 
+    }
+}
+
+private fun buttonEnableBackgroundColor(signUpEmail: String, signUpPassword: String): Color {
+    return if (signUpEmail.isNotEmpty() && signUpPassword.isNotEmpty()) {
+        Color(0xFF1352F9)
+    } else {
+        Color(0xFF717171)
     }
 }
 

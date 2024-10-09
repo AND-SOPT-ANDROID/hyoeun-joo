@@ -46,6 +46,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.sopt.and.R
 import org.sopt.and.component.CustomTextField
+import org.sopt.and.component.DescriptionText
 import org.sopt.and.component.DividerWithText
 import org.sopt.and.core.getSafeParcelable
 import org.sopt.and.core.navigateWithUserInfo
@@ -63,11 +64,9 @@ class LoginActivity : ComponentActivity() {
             id = "",
             password = ""
         )
-
         setContent {
             ANDANDROIDTheme {
                 LoginScreen(userInfo)
-
             }
         }
     }
@@ -88,30 +87,7 @@ fun LoginScreen(userInfo: UserInfo?) {
             .background(color = Color(0xFF1B1B1B))
             .padding(horizontal = 10.dp)
     ) {
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 10.dp)
-                .background(color = Color(0xFF1B1B1B))
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_back_left_white_24),
-                contentDescription = null,
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .padding(vertical = 16.dp)
-            )
-            Image(
-                painter = painterResource(id = R.drawable.ic_logo),
-                contentDescription = "Logo",
-
-                modifier = Modifier
-                    .fillMaxWidth(0.4f)
-                    .aspectRatio(264f / 116f)
-                    .align(Alignment.Center)
-            )
-        }
+        LoginTopBar()
         Spacer(modifier = Modifier.padding(top = 30.dp))
         CustomTextField(
             value = logInEmail, onValueChange = { logInEmail = it },
@@ -138,8 +114,10 @@ fun LoginScreen(userInfo: UserInfo?) {
         Spacer(modifier = Modifier.padding(top = 30.dp))
         NavigateToMain {
             if (logInEmail.isNotBlank() && logInPassword.isNotBlank() && logInEmail == userInfo?.id && logInPassword == userInfo.password) {
-
                 navigateWithUserInfo<MyPageActivity>(context, userInfo)
+                CoroutineScope(Dispatchers.Main).launch {
+                    snackbarHostState.showSnackbar(context.getString(R.string.login_success))
+                }
             } else {
                 CoroutineScope(Dispatchers.Main).launch {
                     snackbarHostState.showSnackbar(context.getString(R.string.login_no_member_info))
@@ -158,13 +136,34 @@ fun LoginScreen(userInfo: UserInfo?) {
             contentDescription = "Social Login",
         )
         Spacer(modifier = Modifier.padding(top = 20.dp))
-        Text(
-            stringResource(R.string.login_join_social_account_description),
-            color = Color(0xFFA5A5A5),
-            fontSize = 12.sp
-        )
+        DescriptionText(stringResource(R.string.login_join_social_account_description))
         SnackbarHost(hostState = snackbarHostState)
+    }
+}
 
+@Composable
+fun LoginTopBar() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp)
+            .background(color = Color(0xFF1B1B1B))
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_back_left_white_24),
+            contentDescription = null,
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(vertical = 16.dp)
+        )
+        Image(
+            painter = painterResource(id = R.drawable.ic_logo),
+            contentDescription = "Logo",
+            modifier = Modifier
+                .fillMaxWidth(0.4f)
+                .aspectRatio(264f / 116f)
+                .align(Alignment.Center)
+        )
     }
 }
 
