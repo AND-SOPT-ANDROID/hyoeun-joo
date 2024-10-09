@@ -1,6 +1,8 @@
 package org.sopt.and.feature
 
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -33,21 +35,35 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.sopt.and.R
 import org.sopt.and.component.CustomTextField
 import org.sopt.and.component.DividerWithText
+import org.sopt.and.core.getSafeParcelable
+import org.sopt.and.core.navigateWithUserInfo
+import org.sopt.and.feature.model.UserInfo
+import org.sopt.and.feature.mypage.MyPageActivity
 import org.sopt.and.ui.theme.ANDANDROIDTheme
 
 class LoginActivity : ComponentActivity() {
+    private lateinit var userInfo: UserInfo
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        userInfo = intent.getSafeParcelable<UserInfo>("userInfo") ?: UserInfo(
+            id = "",
+            password = ""
+        )
+
         setContent {
             ANDANDROIDTheme {
+                LoginScreen(userInfo)
 
             }
         }
@@ -55,10 +71,12 @@ class LoginActivity : ComponentActivity() {
 }
 
 @Composable
-fun LoginScreen() {
-    var logInId by remember { mutableStateOf("") }
+fun LoginScreen(userInfo: UserInfo?) {
+    var logInEmail by remember { mutableStateOf("") }
     var logInPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
 
     Column(
         modifier = Modifier
@@ -91,7 +109,8 @@ fun LoginScreen() {
             )
         }
         Spacer(modifier = Modifier.padding(top = 30.dp))
-        CustomTextField(value = logInId, onValueChange = { logInId = it }, "이메일 주소 또는 아이디")
+        CustomTextField(value = logInEmail, onValueChange = { logInEmail = it },
+            stringResource(R.string.login_email_id))
         Spacer(modifier = Modifier.padding(top = 10.dp))
         Box(
             modifier = Modifier.fillMaxWidth(),
@@ -100,7 +119,7 @@ fun LoginScreen() {
             CustomTextField(
                 value = logInPassword,
                 onValueChange = { logInPassword = it },
-                placeholder = "Wavve 비밀번호 설정",
+                placeholder = stringResource(R.string.login_setting_password),
                 passwordVisible = passwordVisible,
                 padding = PaddingValues(vertical = 10.dp)
             )
@@ -111,22 +130,35 @@ fun LoginScreen() {
             )
         }
         Spacer(modifier = Modifier.padding(top = 30.dp))
-        NavigateToMain {  }
+        NavigateToMain {
+            if (userInfo != null && logInEmail == userInfo.id && logInPassword == userInfo!!.password) {
+
+                navigateWithUserInfo<MyPageActivity>(context, userInfo)
+            } else {
+                Toast.makeText(context,
+                    context.getString(R.string.login_no_member_info), Toast.LENGTH_SHORT).show()
+
+            }
+        }
         Spacer(modifier = Modifier.padding(top = 20.dp))
-        ThreeTextsWithDividers(modifier = Modifier.fillMaxWidth(), "아이디 찾기", "비밀번호 재설정", "회원가입")
-        DividerWithText("또는 다른 서비스 계정으로 가입")
+        ThreeTextsWithDividers(modifier = Modifier.fillMaxWidth(),
+            stringResource(R.string.login_find_id),
+            stringResource(R.string.login_setting_password_again), stringResource(R.string.sign_up)
+        )
+        DividerWithText(stringResource(R.string.login_join_with_social_account))
         Image(
             painter = painterResource(id = R.drawable.ic_social_login),
             contentDescription = "Social Login",
         )
         Spacer(modifier = Modifier.padding(top = 20.dp))
         Text(
-            "SNS계정으로 간편하게 가입하여 서비스를 이용하실 수 있습니다. 기존 POOQ 계정 또는 Wavve 계정과는 연동되지 않으니 이용에 참고하세요.",
+            stringResource(R.string.login_join_social_account_description),
             color = Color(0xFFA5A5A5),
             fontSize = 12.sp
         )
     }
 }
+
 @Composable
 fun NavigateToMain(onClick: () -> Unit) {
     Button(
@@ -140,7 +172,7 @@ fun NavigateToMain(onClick: () -> Unit) {
         ),
         contentPadding = PaddingValues(16.dp)
     ) {
-        Text("로그인")
+        Text(stringResource(R.string.login))
     }
 }
 
@@ -151,6 +183,8 @@ fun ThreeTextsWithDividers(
     text2: String,
     text3: String,
 ) {
+    val context = LocalContext.current
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -195,7 +229,11 @@ fun ThreeTextsWithDividers(
         Text(
             text = text3,
             color = Color(0xFFA5A5A5),
-            fontSize = 12.sp
+            fontSize = 12.sp,
+            modifier = Modifier.clickable {
+                navigateWithUserInfo<SignUpActivity>(context)
+
+            }
         )
     }
 }
@@ -205,6 +243,6 @@ fun ThreeTextsWithDividers(
 @Composable
 fun ExamplePreview() {
     ANDANDROIDTheme {
-        LoginScreen()
+        LoginScreen(userInfo = null)
     }
 }
