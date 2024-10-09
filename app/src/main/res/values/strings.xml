@@ -1,3 +1,35 @@
 <resources>
     <string name="app_name">AND-ANDROID</string>
+    <!--    BottomNavi-->
+    <string name="nav_home">홈</string>
+    <string name="nav_search">검색</string>
+    <string name="nav_my_page">MY</string>
+
+    <!--    Login-->
+    <string name="login_setting_password">Wavve 비밀번호 설정</string>
+    <string name="login_no_member_info">없는 회원정보입니다.</string>
+    <string name="login_find_id">아이디 찾기</string>
+    <string name="login_setting_password_again">비밀번호 재설정</string>
+    <string name="sign_up">회원가입</string>
+    <string name="login_join_with_social_account">또는 다른 서비스 계정으로 가입</string>
+    <string name="login_join_social_account_description">SNS계정으로 간편하게 가입하여 서비스를 이용하실 수 있습니다. 기존 POOQ 계정 또는 Wavve 계정과는 연동되지 않으니 이용에 참고하세요.</string>
+    <string name="login">로그인</string>
+    <string name="login_email_id">이메일 주소 또는 아이디</string>
+
+    <!--        SignUp-->
+    <string name="signup_join_with_email_password">이메일과 비밀번호만으로</string>
+    <string name="signup_join_with_wavve">Wavve를 즐길 수 있어요!</string>
+    <string name="signup_id_description">! 로그인,비밀번호 찾기,알림에 사용되니 정확한 이메일을 입력해주세요.</string>
+    <string name="signup_password_description">! 비밀번호는 8~20자 이내로 영문 대소문자,숫자, 특수문자 중 3가지 이상 혼영하여 입력해 주세요.</string>
+    <string name="signup_login_error_message">형식에 맞지 않는 이메일 또는 비밀번호입니다.</string>
+    <string name="signup_join_wavve">Wavve 회원가입</string>
+
+    <!--    Profile Screen-->
+    <string name="person">님</string>
+    <string name="profile_first_purchase_description">첫 결제 시 첫 달 100원!</string>
+    <string name="profile_no_ticket">"현재 보유하신 이용권이 없습니다. "</string>
+    <string name="profile_total_view_history">전체 시청내역</string>
+    <string name="profile_no_view_history">시청내역이 없어요.</string>
+    <string name="profile_interest_program">관심 프로그램</string>
+    <string name="profile_no_interest_program">관심 프로그램이 없어요.</string>
 </resources>
