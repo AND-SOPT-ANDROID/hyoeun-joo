@@ -1,6 +1,5 @@
 package org.sopt.and.feature.login
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -50,7 +49,7 @@ import org.sopt.and.feature.model.UserInfo
 import org.sopt.and.ui.theme.ANDANDROIDTheme
 
 @Composable
-fun LoginScreen(navController: NavController, userInfo: UserInfo?) {
+fun LoginScreen(navController: NavController) {
     val viewModel: LoginViewModel = viewModel()
 
     val logInEmail by viewModel.email.collectAsState()
@@ -60,7 +59,8 @@ fun LoginScreen(navController: NavController, userInfo: UserInfo?) {
     val context = LocalContext.current
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val userInfo = navController.previousBackStackEntry?.arguments?.getParcelable<UserInfo>("userInfo")
+    val userInfo =
+        navController.previousBackStackEntry?.arguments?.getParcelable<UserInfo>("userInfo")
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -104,7 +104,10 @@ fun LoginScreen(navController: NavController, userInfo: UserInfo?) {
             isLoginSuccessful?.let {
                 if (it) {
                     snackbarHostState.showSnackbar(context.getString(R.string.login_success))
-                    navController.currentBackStackEntry?.arguments?.putParcelable("userInfo", userInfo)
+                    navController.currentBackStackEntry?.arguments?.putParcelable(
+                        "userInfo",
+                        userInfo
+                    )
                     navController.navigate("mypage")
                 } else {
                     snackbarHostState.showSnackbar(context.getString(R.string.login_no_member_info))
@@ -180,10 +183,8 @@ fun ThreeTextsWithDividers(
     text1: String,
     text2: String,
     text3: String,
-    navController: NavController, // navController 추가
+    navController: NavController,
 ) {
-    val context = LocalContext.current
-
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -230,8 +231,7 @@ fun ThreeTextsWithDividers(
             color = Color(0xFFA5A5A5),
             fontSize = 12.sp,
             modifier = Modifier.clickable {
-                // 여기에 navController를 사용하여 화면 전환
-                navController.navigate("signup") // 필요한 화면으로 이동
+                navController.navigate("signup")
             }
         )
     }
