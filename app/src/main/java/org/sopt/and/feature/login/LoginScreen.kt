@@ -1,9 +1,6 @@
-package org.sopt.and.feature
+package org.sopt.and.feature.login
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,6 +25,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,46 +40,27 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import org.sopt.and.R
 import org.sopt.and.component.CustomTextField
 import org.sopt.and.component.DescriptionText
 import org.sopt.and.component.DividerWithText
-import org.sopt.and.core.getSafeParcelable
-import org.sopt.and.core.navigateWithUserInfo
 import org.sopt.and.feature.model.UserInfo
-import org.sopt.and.feature.mypage.MyPageActivity
 import org.sopt.and.ui.theme.ANDANDROIDTheme
 
-class LoginActivity : ComponentActivity() {
-    private lateinit var userInfo: UserInfo
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-
-        userInfo = intent.getSafeParcelable<UserInfo>("userInfo") ?: UserInfo(
-            id = "",
-            password = ""
-        )
-        setContent {
-            ANDANDROIDTheme {
-                LoginScreen(userInfo)
-            }
-        }
-    }
-}
-
 @Composable
-fun LoginScreen(userInfo: UserInfo?) {
-    var logInEmail by remember { mutableStateOf("") }
-    var logInPassword by remember { mutableStateOf("") }
+fun LoginScreen(navController: NavController, userInfo: UserInfo?) {
+    val viewModel: LoginViewModel = viewModel()
+
+    val logInEmail by viewModel.email.collectAsState()
+    val logInPassword by viewModel.password.collectAsState()
+    val isLoginSuccessful by viewModel.isLoginSuccessful.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     val snackbarHostState = remember { SnackbarHostState() }
-
+    val userInfo = navController.previousBackStackEntry?.arguments?.getParcelable<UserInfo>("userInfo")
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -90,8 +70,9 @@ fun LoginScreen(userInfo: UserInfo?) {
         LoginTopBar()
         Spacer(modifier = Modifier.padding(top = 30.dp))
         CustomTextField(
-            value = logInEmail, onValueChange = { logInEmail = it },
-            stringResource(R.string.login_email_id)
+            value = logInEmail,
+            onValueChange = { viewModel.updateEmail(it) },
+            placeholder = stringResource(R.string.login_email_id)
         )
         Spacer(modifier = Modifier.padding(top = 10.dp))
         Box(
@@ -100,35 +81,44 @@ fun LoginScreen(userInfo: UserInfo?) {
         ) {
             CustomTextField(
                 value = logInPassword,
-                onValueChange = { logInPassword = it },
+                onValueChange = { viewModel.updatePassword(it) },
                 placeholder = stringResource(R.string.login_setting_password),
                 passwordVisible = passwordVisible,
                 padding = PaddingValues(vertical = 10.dp)
             )
-            Text("show", color = Color.White,
+            Text(
+                text = if (passwordVisible) "hide" else "show",
+                color = Color.White,
                 modifier = Modifier
                     .padding(end = 10.dp)
                     .clickable { passwordVisible = !passwordVisible }
             )
         }
         Spacer(modifier = Modifier.padding(top = 30.dp))
+
         NavigateToMain {
-            if (logInEmail.isNotBlank() && logInPassword.isNotBlank() && logInEmail == userInfo?.id && logInPassword == userInfo.password) {
-                navigateWithUserInfo<MyPageActivity>(context, userInfo)
-                CoroutineScope(Dispatchers.Main).launch {
+            viewModel.login(userInfo)
+        }
+
+        LaunchedEffect(isLoginSuccessful) {
+            isLoginSuccessful?.let {
+                if (it) {
                     snackbarHostState.showSnackbar(context.getString(R.string.login_success))
-                }
-            } else {
-                CoroutineScope(Dispatchers.Main).launch {
+                    navController.currentBackStackEntry?.arguments?.putParcelable("userInfo", userInfo)
+                    navController.navigate("mypage")
+                } else {
                     snackbarHostState.showSnackbar(context.getString(R.string.login_no_member_info))
                 }
             }
         }
+
         Spacer(modifier = Modifier.padding(top = 20.dp))
         ThreeTextsWithDividers(
             modifier = Modifier.fillMaxWidth(),
             stringResource(R.string.login_find_id),
-            stringResource(R.string.login_setting_password_again), stringResource(R.string.sign_up)
+            stringResource(R.string.login_setting_password_again),
+            stringResource(R.string.sign_up),
+            navController = navController
         )
         DividerWithText(stringResource(R.string.login_join_with_social_account))
         Image(
@@ -190,6 +180,7 @@ fun ThreeTextsWithDividers(
     text1: String,
     text2: String,
     text3: String,
+    navController: NavController, // navController 추가
 ) {
     val context = LocalContext.current
 
@@ -239,18 +230,16 @@ fun ThreeTextsWithDividers(
             color = Color(0xFFA5A5A5),
             fontSize = 12.sp,
             modifier = Modifier.clickable {
-                navigateWithUserInfo<SignUpActivity>(context)
-
+                // 여기에 navController를 사용하여 화면 전환
+                navController.navigate("signup") // 필요한 화면으로 이동
             }
         )
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
 fun ExamplePreview() {
     ANDANDROIDTheme {
-        LoginScreen(userInfo = null)
     }
 }
