@@ -13,6 +13,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,7 +27,8 @@ import androidx.compose.ui.unit.sp
 import org.sopt.and.R
 
 @Composable
-fun ProfileScreen(userName: String) {
+fun ProfileScreen(viewModel: MyPageViewModel) {
+    val userName by viewModel.email.collectAsState()
 
     Column(
         modifier = Modifier
@@ -37,7 +40,6 @@ fun ProfileScreen(userName: String) {
                 .fillMaxWidth()
                 .background(color = Color(0xFF252525)),
             verticalAlignment = Alignment.CenterVertically
-
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_profile_24),
@@ -46,7 +48,7 @@ fun ProfileScreen(userName: String) {
                 alignment = Alignment.CenterStart
             )
             Text(
-                userName + stringResource(R.string.person),
+                "$userName" + stringResource(R.string.person),
                 color = Color.White,
                 modifier = Modifier
                     .weight(1f)
@@ -71,7 +73,6 @@ fun ProfileScreen(userName: String) {
             stringResource(R.string.profile_interest_program),
             stringResource(R.string.profile_no_interest_program)
         )
-
     }
 }
 

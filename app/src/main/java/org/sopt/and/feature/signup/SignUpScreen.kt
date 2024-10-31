@@ -1,9 +1,5 @@
-package org.sopt.and.feature
+package org.sopt.and.feature.signup
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,6 +15,7 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,38 +29,28 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import org.sopt.and.R
 import org.sopt.and.component.CustomTextField
 import org.sopt.and.component.DescriptionText
 import org.sopt.and.component.DividerWithText
-import org.sopt.and.core.navigateWithUserInfo
 import org.sopt.and.core.showToast
 import org.sopt.and.feature.model.UserInfo
-import org.sopt.and.feature.usecase.UserInfoUseCase
 import org.sopt.and.ui.theme.ANDANDROIDTheme
 import org.sopt.and.util.extenstion.applyColorSpan
 
-class SignUpActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            ANDANDROIDTheme {
-                SignUpScreen()
-            }
-        }
-    }
-}
-
 @Composable
-fun SignUpScreen() {
-    val userInfoUseCase = UserInfoUseCase()
-    var signUpEmail by remember { mutableStateOf("") }
-    var signUpPassword by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
-    val context = LocalContext.current
+fun SignUpScreen(navController: NavController) {
+    val viewModel: SignUpViewModel = viewModel()
 
-    var userInfo by remember { mutableStateOf<UserInfo?>(null) }
+    val signUpEmail by viewModel.email.collectAsState()
+    val signUpPassword by viewModel.password.collectAsState()
+    var passwordVisible by remember { mutableStateOf(false) }
+
+    val isEmailValid by viewModel.isEmailValid.collectAsState()
+    val isPasswordValid by viewModel.isPasswordValid.collectAsState()
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -75,9 +62,9 @@ fun SignUpScreen() {
                 .fillMaxWidth()
                 .padding(horizontal = 10.dp)
         ) {
-
             SignUpTopBar()
             Spacer(modifier = Modifier.padding(top = 10.dp))
+
             BasicText(
                 text = stringResource(R.string.signup_join_with_email_password).applyColorSpan(
                     start = 0,
@@ -93,20 +80,23 @@ fun SignUpScreen() {
                 )
             )
             Spacer(modifier = Modifier.padding(top = 20.dp))
+
             CustomTextField(
                 value = signUpEmail,
-                onValueChange = { signUpEmail = it },
+                onValueChange = { viewModel.updateEmail(it) },
                 placeholder = "wavve@example.com"
             )
             DescriptionText(stringResource(R.string.signup_id_description))
+
             Spacer(modifier = Modifier.padding(top = 20.dp))
+
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 CustomTextField(
                     value = signUpPassword,
-                    onValueChange = { signUpPassword = it },
+                    onValueChange = { viewModel.updatePassword(it) },
                     placeholder = stringResource(R.string.login_setting_password),
                     passwordVisible = passwordVisible
                 )
@@ -119,6 +109,7 @@ fun SignUpScreen() {
                 )
             }
             DescriptionText(stringResource(R.string.signup_password_description))
+
             Spacer(modifier = Modifier.padding(top = 30.dp))
             DividerWithText(stringResource(R.string.login_join_with_social_account))
 
@@ -126,6 +117,7 @@ fun SignUpScreen() {
                 painter = painterResource(id = R.drawable.ic_social_login),
                 contentDescription = "Social Login",
             )
+
             Spacer(modifier = Modifier.padding(top = 20.dp))
             DescriptionText(stringResource(R.string.login_join_social_account_description))
         }
@@ -134,19 +126,17 @@ fun SignUpScreen() {
         NavigateToLogin(
             backgroundColor = buttonEnableBackgroundColor(signUpEmail, signUpPassword)
         ) {
-            if (userInfoUseCase.isValidEmail(signUpEmail) && userInfoUseCase.isValidPassword(
-                    signUpPassword
-                )
-            ) {
-                userInfo = UserInfo(id = signUpEmail, password = signUpPassword)
-                navigateWithUserInfo<LoginActivity>(context, userInfo)
+            if (isEmailValid && isPasswordValid) {
+
+                val userInfo = UserInfo(id = signUpEmail, password = signUpPassword)
+                navController.currentBackStackEntry?.arguments?.putParcelable("userInfo", userInfo)
+
+                navController.navigate("login")
             } else {
                 context.showToast(context.getString(R.string.signup_login_error_message))
             }
         }
-
     }
-
 }
 
 
@@ -205,6 +195,5 @@ private fun buttonEnableBackgroundColor(signUpEmail: String, signUpPassword: Str
 @Composable
 fun GreetingPreview() {
     ANDANDROIDTheme {
-        SignUpScreen()
     }
 }

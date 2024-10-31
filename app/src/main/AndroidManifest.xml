@@ -12,21 +12,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ANDANDROID"
         tools:targetApi="31">
+
         <activity
-            android:name=".feature.SignUpActivity"
-            android:exported="false"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.ANDANDROID"/>
-        <activity
-            android:name=".feature.mypage.MyPageActivity"
-            android:exported="false"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.ANDANDROID"/>
-        <activity
-            android:name=".feature.LoginActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.ANDANDROID">
+            android:name=".feature.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

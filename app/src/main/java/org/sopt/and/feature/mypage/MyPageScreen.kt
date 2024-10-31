@@ -1,9 +1,5 @@
 package org.sopt.and.feature.mypage
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,32 +10,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
-import org.sopt.and.core.getSafeParcelable
 import org.sopt.and.feature.model.UserInfo
 import org.sopt.and.feature.nav.BottomNavGraph
 import org.sopt.and.feature.nav.BottomNavigation
 import org.sopt.and.ui.theme.ANDANDROIDTheme
 
-class MyPageActivity : ComponentActivity() {
-    private lateinit var userInfo: UserInfo
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            ANDANDROIDTheme {
-                userInfo = intent.getSafeParcelable<UserInfo>("userInfo") ?: UserInfo(
-                    id = "",
-                    password = ""
-                )
-                MyPageScreen(userInfo)
-            }
-        }
-    }
-}
-
 
 @Composable
-fun MyPageScreen(userInfo: UserInfo) {
+fun MyPageScreen(userInfo: UserInfo, viewModel: MyPageViewModel) {
+    viewModel.setEmail(userInfo)
+
     val navController = rememberNavController()
 
     Scaffold(
@@ -51,16 +31,17 @@ fun MyPageScreen(userInfo: UserInfo) {
                 .background(color = Color(0xFF1B1B1B))
                 .padding(it)
         ) {
-            BottomNavGraph(navController = navController, userInfo = userInfo)
+            BottomNavGraph(
+                navController = navController,
+                viewModel = viewModel
+            )
         }
     }
 }
-
 
 @Preview
 @Composable
 fun GreetingPreview2() {
     ANDANDROIDTheme {
-        MyPageScreen(userInfo = UserInfo(id = "dd", password = "sss"))
     }
 }
