@@ -52,8 +52,8 @@ import org.sopt.and.ui.theme.ANDANDROIDTheme
 fun LoginScreen(navController: NavController) {
     val viewModel: LoginViewModel = viewModel()
 
-    val logInEmail by viewModel.email.collectAsState()
-    val logInPassword by viewModel.password.collectAsState()
+    val loginEmail by viewModel.email.collectAsState()
+    val loginPassword by viewModel.password.collectAsState()
     val isLoginSuccessful by viewModel.isLoginSuccessful.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -70,7 +70,7 @@ fun LoginScreen(navController: NavController) {
         LoginTopBar()
         Spacer(modifier = Modifier.padding(top = 30.dp))
         CustomTextField(
-            value = logInEmail,
+            value = loginEmail,
             onValueChange = { viewModel.updateEmail(it) },
             placeholder = stringResource(R.string.login_email_id)
         )
@@ -80,7 +80,7 @@ fun LoginScreen(navController: NavController) {
             contentAlignment = Alignment.CenterEnd
         ) {
             CustomTextField(
-                value = logInPassword,
+                value = loginPassword,
                 onValueChange = { viewModel.updatePassword(it) },
                 placeholder = stringResource(R.string.login_setting_password),
                 passwordVisible = passwordVisible,
