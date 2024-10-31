@@ -25,13 +25,13 @@ class MainActivity : ComponentActivity() {
             ANDANDROIDTheme {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = "login") {
-                    composable("login") {
+                    composable(ScreenRoute.LOGIN.route) {
                         LoginScreen(navController)
                     }
-                    composable("signup") {
+                    composable(ScreenRoute.SIGNUP.route) {
                         SignUpScreen(navController)
                     }
-                    composable("mypage") {
+                    composable(ScreenRoute.MYPAGE.route) {
                         val userInfo =
                             navController.previousBackStackEntry?.arguments?.getParcelable<UserInfo>(
                                 "userInfo"
