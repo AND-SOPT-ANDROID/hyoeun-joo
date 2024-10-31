@@ -38,6 +38,11 @@ android {
     buildFeatures {
         compose = true
     }
+    kotlin {
+        sourceSets.all {
+            languageSettings.enableLanguageFeature("ExplicitBackingFields")
+        }
+    }
 }
 
 dependencies {
@@ -52,7 +57,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation (libs.accompanist.pager)
-    implementation(libs.accompanist.pager.v0360)
+    implementation(libs.accompanist.pager)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
