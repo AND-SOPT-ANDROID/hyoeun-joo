@@ -161,10 +161,10 @@ fun HomeTopBanner(
 ) {
     val coroutine = rememberCoroutineScope()
     val pagerState = rememberPagerState(
-        initialPage = 400,
+        initialPage = bannerItem.size,
         pageCount = { Int.MAX_VALUE }
     )
-    LaunchedEffect(true) {
+    LaunchedEffect(pagerState) {
         while (true) {
             delay(3000)
             coroutine.launch {
