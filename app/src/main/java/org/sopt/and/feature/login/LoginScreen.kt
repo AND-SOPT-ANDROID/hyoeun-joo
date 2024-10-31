@@ -121,7 +121,7 @@ fun LoginScreen(navController: NavController) {
             stringResource(R.string.login_find_id),
             stringResource(R.string.login_setting_password_again),
             stringResource(R.string.sign_up),
-            navController = navController
+            onSignUpClick = { navController.navigate("signup") }
         )
         DividerWithText(stringResource(R.string.login_join_with_social_account))
         Image(
@@ -183,7 +183,7 @@ fun ThreeTextsWithDividers(
     text1: String,
     text2: String,
     text3: String,
-    navController: NavController,
+    onSignUpClick: () -> Unit,
 ) {
     Row(
         modifier = modifier
@@ -230,9 +230,7 @@ fun ThreeTextsWithDividers(
             text = text3,
             color = Color(0xFFA5A5A5),
             fontSize = 12.sp,
-            modifier = Modifier.clickable {
-                navController.navigate("signup")
-            }
+            modifier = Modifier.clickable { onSignUpClick() }
         )
     }
 }
