@@ -2,37 +2,38 @@ package org.sopt.and.feature.login
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.sopt.and.feature.model.UserInfo
 
 class LoginViewModel : ViewModel() {
-    private val _email = MutableStateFlow("")
-    val email = _email.asStateFlow()
 
-    private val _password = MutableStateFlow("")
-    val password = _password.asStateFlow()
+    val email: StateFlow<String>
+        field = MutableStateFlow("")
 
-    private val _isLoginSuccessful = MutableStateFlow<Boolean?>(null)
-    val isLoginSuccessful = _isLoginSuccessful.asStateFlow()
+    val password: StateFlow<String>
+        field = MutableStateFlow("")
+
+    val isLoginSuccessful: StateFlow<Boolean>
+        field = MutableStateFlow(false)
 
     fun updateEmail(newEmail: String) {
-        _email.value = newEmail
+        email.value = newEmail
     }
 
     fun updatePassword(newPassword: String) {
-        _password.value = newPassword
+        password.value = newPassword
     }
 
     fun login(userInfo: UserInfo?) {
-        val currentEmail = _email.value
-        val currentPassword = _password.value
+        val currentEmail = email.value
+        val currentPassword = password.value
 
         if (currentEmail.isNotBlank() && currentPassword.isNotBlank() &&
             currentEmail == userInfo?.id && currentPassword == userInfo.password
         ) {
-            _isLoginSuccessful.value = true
+            isLoginSuccessful.value = true
         } else {
-            _isLoginSuccessful.value = false
+            isLoginSuccessful.value = false
         }
     }
 }

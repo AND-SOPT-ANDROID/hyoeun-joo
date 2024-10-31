@@ -13,7 +13,4 @@ class MyPageViewModel : ViewModel() {
     fun setEmail(userInfo: UserInfo) {
         _email.value = userInfo.id
     }
-    fun setUserInfo(userInfo: UserInfo) {
-        _email.value = userInfo.id
-    }
 }
