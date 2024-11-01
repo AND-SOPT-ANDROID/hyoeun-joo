@@ -2,7 +2,6 @@ package org.sopt.and.feature.signup
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,9 +16,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,9 +28,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import org.sopt.and.R
-import org.sopt.and.component.CustomTextField
+import org.sopt.and.component.textfield.CustomEmailTextField
 import org.sopt.and.component.DescriptionText
 import org.sopt.and.component.DividerWithText
+import org.sopt.and.component.textfield.CustomPwTextField
 import org.sopt.and.core.showToast
 import org.sopt.and.feature.model.UserInfo
 import org.sopt.and.ui.theme.ANDANDROIDTheme
@@ -46,10 +43,10 @@ fun SignUpScreen(navController: NavController) {
 
     val signUpEmail by viewModel.email.collectAsState()
     val signUpPassword by viewModel.password.collectAsState()
-    var passwordVisible by remember { mutableStateOf(false) }
 
     val isEmailValid by viewModel.isEmailValid.collectAsState()
     val isPasswordValid by viewModel.isPasswordValid.collectAsState()
+
     val context = LocalContext.current
 
     Column(
@@ -81,33 +78,23 @@ fun SignUpScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.padding(top = 20.dp))
 
-            CustomTextField(
+            CustomEmailTextField(
                 value = signUpEmail,
                 onValueChange = { viewModel.updateEmail(it) },
-                placeholder = "wavve@example.com"
+                placeholder = "wavve@example.com",
+                isError = !isEmailValid,
             )
             DescriptionText(stringResource(R.string.signup_id_description))
 
             Spacer(modifier = Modifier.padding(top = 20.dp))
 
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.CenterEnd
-            ) {
-                CustomTextField(
-                    value = signUpPassword,
-                    onValueChange = { viewModel.updatePassword(it) },
-                    placeholder = stringResource(R.string.login_setting_password),
-                    passwordVisible = passwordVisible
-                )
-                Text(
-                    text = if (passwordVisible) "hide" else "show",
-                    color = Color.White,
-                    modifier = Modifier
-                        .padding(end = 10.dp)
-                        .clickable { passwordVisible = !passwordVisible }
-                )
-            }
+            CustomPwTextField(
+                value = signUpPassword,
+                onValueChange = { viewModel.updatePassword(it) },
+                placeholder = stringResource(R.string.login_setting_password),
+                isError = !isPasswordValid,
+                modifier = Modifier.padding(vertical = 10.dp)
+            )
             DescriptionText(stringResource(R.string.signup_password_description))
 
             Spacer(modifier = Modifier.padding(top = 30.dp))
