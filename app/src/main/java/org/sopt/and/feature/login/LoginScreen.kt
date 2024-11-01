@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import org.sopt.and.R
+import org.sopt.and.component.CustomHeader
 import org.sopt.and.component.DescriptionText
 import org.sopt.and.component.DividerWithText
 import org.sopt.and.component.textfield.CustomPwTextField
@@ -65,7 +66,24 @@ fun LoginScreen(navController: NavController) {
             .background(color = Color(0xFF1B1B1B))
             .padding(horizontal = 10.dp)
     ) {
-        LoginTopBar()
+        CustomHeader(
+            startIcon = {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_back_left_white_24),
+                    contentDescription = null,
+                    modifier = Modifier.padding(vertical = 16.dp) // 적절한 패딩 설정
+                )
+            },
+            centerContent = {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_logo), // 중앙에 표시할 이미지
+                    contentDescription = "Logo",
+                    modifier = Modifier
+                        .fillMaxWidth(0.4f)
+                        .aspectRatio(264f / 116f)
+                )
+            },
+        )
         Spacer(modifier = Modifier.padding(top = 30.dp))
         CustomEmailTextField(
             value = loginEmail,
@@ -102,7 +120,7 @@ fun LoginScreen(navController: NavController) {
         }
 
         Spacer(modifier = Modifier.padding(top = 20.dp))
-        ThreeTextsWithDividers(
+        FindIdPwOrSignUp(
             modifier = Modifier.fillMaxWidth(),
             stringResource(R.string.login_find_id),
             stringResource(R.string.login_setting_password_again),
@@ -117,32 +135,6 @@ fun LoginScreen(navController: NavController) {
         Spacer(modifier = Modifier.padding(top = 20.dp))
         DescriptionText(stringResource(R.string.login_join_social_account_description))
         SnackbarHost(hostState = snackbarHostState)
-    }
-}
-
-@Composable
-fun LoginTopBar() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp)
-            .background(color = Color(0xFF1B1B1B))
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_back_left_white_24),
-            contentDescription = null,
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .padding(vertical = 16.dp)
-        )
-        Image(
-            painter = painterResource(id = R.drawable.ic_logo),
-            contentDescription = "Logo",
-            modifier = Modifier
-                .fillMaxWidth(0.4f)
-                .aspectRatio(264f / 116f)
-                .align(Alignment.Center)
-        )
     }
 }
 
@@ -164,11 +156,11 @@ fun NavigateToMain(onClick: () -> Unit) {
 }
 
 @Composable
-fun ThreeTextsWithDividers(
+fun FindIdPwOrSignUp(
     modifier: Modifier = Modifier,
-    text1: String,
-    text2: String,
-    text3: String,
+    findId: String,
+    reSettingPw: String,
+    signUp: String,
     onSignUpClick: () -> Unit,
 ) {
     Row(
@@ -179,7 +171,7 @@ fun ThreeTextsWithDividers(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = text1,
+            text = findId,
             color = Color(0xFFA5A5A5),
             fontSize = 12.sp
         )
@@ -196,7 +188,7 @@ fun ThreeTextsWithDividers(
         Spacer(modifier = Modifier.width(8.dp))
 
         Text(
-            text = text2,
+            text = reSettingPw,
             color = Color(0xFFA5A5A5),
             fontSize = 12.sp
         )
@@ -213,7 +205,7 @@ fun ThreeTextsWithDividers(
         Spacer(modifier = Modifier.width(8.dp))
 
         Text(
-            text = text3,
+            text = signUp,
             color = Color(0xFFA5A5A5),
             fontSize = 12.sp,
             modifier = Modifier.clickable { onSignUpClick() }

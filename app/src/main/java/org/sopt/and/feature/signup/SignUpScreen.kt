@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import org.sopt.and.R
+import org.sopt.and.component.CustomHeader
 import org.sopt.and.component.textfield.CustomEmailTextField
 import org.sopt.and.component.DescriptionText
 import org.sopt.and.component.DividerWithText
@@ -59,7 +60,21 @@ fun SignUpScreen(navController: NavController) {
                 .fillMaxWidth()
                 .padding(horizontal = 10.dp)
         ) {
-            SignUpTopBar()
+            Spacer(modifier = Modifier.padding(start = 16.dp))
+            CustomHeader(
+                centerContent = {
+                    Text(
+                        text = stringResource(R.string.sign_up),
+                        color = Color.White,
+                    )
+                },
+                endIcon = {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_close_white_24),
+                        contentDescription = null,
+                    )
+                }
+            )
             Spacer(modifier = Modifier.padding(top = 10.dp))
 
             BasicText(
@@ -123,30 +138,6 @@ fun SignUpScreen(navController: NavController) {
                 context.showToast(context.getString(R.string.signup_login_error_message))
             }
         }
-    }
-}
-
-
-@Composable
-fun SignUpTopBar() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp)
-            .background(color = Color(0xFF1B1B1B))
-    ) {
-        Text(
-            stringResource(R.string.sign_up),
-            color = Color.White,
-            modifier = Modifier.align(Alignment.Center)
-        )
-        Image(
-            painter = painterResource(id = R.drawable.ic_close_white_24),
-            contentDescription = null,
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(vertical = 16.dp)
-        )
     }
 }
 
