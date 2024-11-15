@@ -1,5 +1,6 @@
 package org.sopt.and.feature.login
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,28 +40,27 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import org.sopt.and.R
+import org.sopt.and.UiState
 import org.sopt.and.component.CustomTextField
 import org.sopt.and.component.DescriptionText
 import org.sopt.and.component.DividerWithText
-import org.sopt.and.feature.model.UserInfo
+import org.sopt.and.feature.model.LoginInfo
 import org.sopt.and.ui.theme.ANDANDROIDTheme
 
 @Composable
 fun LoginScreen(navController: NavController) {
-    val viewModel: LoginViewModel = viewModel()
+    val viewModel: LoginViewModel = hiltViewModel()
 
     val loginEmail by viewModel.email.collectAsState()
     val loginPassword by viewModel.password.collectAsState()
-    val isLoginSuccessful by viewModel.isLoginSuccessful.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
-
+    val loginState by viewModel.loginState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val userInfo =
-        navController.previousBackStackEntry?.arguments?.getParcelable<UserInfo>("userInfo")
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -97,22 +97,33 @@ fun LoginScreen(navController: NavController) {
         Spacer(modifier = Modifier.padding(top = 30.dp))
 
         NavigateToMain {
-            viewModel.login(userInfo)
+            val userInfo = LoginInfo(loginEmail, loginPassword)
+            viewModel.submitLogin(userInfo)
         }
 
-        LaunchedEffect(isLoginSuccessful) {
-            isLoginSuccessful?.let {
-                if (it) {
-                    snackbarHostState.showSnackbar(context.getString(R.string.login_success))
-                    navController.currentBackStackEntry?.arguments?.putParcelable(
-                        "userInfo",
-                        userInfo
-                    )
-                    navController.navigate("mypage")
-                } else {
-                    snackbarHostState.showSnackbar(context.getString(R.string.login_no_member_info))
+        when (val state = loginState) {
+            is UiState.Success -> {
+                LaunchedEffect(state.data) {
+                    val authToken = state.data?.token
+                    if (authToken != null) {
+                        snackbarHostState.showSnackbar(context.getString(R.string.login_success))
+                        saveAuthToken(context, authToken)
+                        navController.navigate("mypage") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    } else {
+                        snackbarHostState.showSnackbar("로그인 실패")
+                    }
                 }
             }
+
+            is UiState.Failure -> {
+                LaunchedEffect(state.errorMessage) {
+                    snackbarHostState.showSnackbar(state.errorMessage)
+                }
+            }
+
+            else -> Unit
         }
 
         Spacer(modifier = Modifier.padding(top = 20.dp))
@@ -132,6 +143,11 @@ fun LoginScreen(navController: NavController) {
         DescriptionText(stringResource(R.string.login_join_social_account_description))
         SnackbarHost(hostState = snackbarHostState)
     }
+}
+
+fun saveAuthToken(context: Context, token: String) {
+    val sharedPreferences = context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+    sharedPreferences.edit().putString("auth_token", token).apply()
 }
 
 @Composable

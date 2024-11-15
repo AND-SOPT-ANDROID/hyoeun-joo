@@ -1,39 +1,52 @@
 package org.sopt.and.feature.login
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import org.sopt.and.feature.model.UserInfo
+import kotlinx.coroutines.launch
+import org.sopt.and.UiState
+import org.sopt.and.domain.repository.LoginRepository
+import org.sopt.and.feature.model.LoginInfo
+import org.sopt.and.feature.model.ResponseLoginModel
+import javax.inject.Inject
 
-class LoginViewModel : ViewModel() {
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    private val loginRepository: LoginRepository
+) : ViewModel() {
 
-    val email: StateFlow<String>
-        field = MutableStateFlow("")
+    private val _email = MutableStateFlow("")
+    val email: StateFlow<String> = _email
 
-    val password: StateFlow<String>
-        field = MutableStateFlow("")
+    private val _password = MutableStateFlow("")
+    val password: StateFlow<String> = _password
 
-    val isLoginSuccessful: StateFlow<Boolean>
-        field = MutableStateFlow(false)
+    private val _loginState = MutableStateFlow<UiState<ResponseLoginModel>>(UiState.Loading)
+    val loginState: StateFlow<UiState<ResponseLoginModel>> = _loginState
+
+    private val _authToken = MutableStateFlow<String?>(null)
+    val authToken: StateFlow<String?> = _authToken
 
     fun updateEmail(newEmail: String) {
-        email.value = newEmail
+        _email.value = newEmail
     }
 
     fun updatePassword(newPassword: String) {
-        password.value = newPassword
+        _password.value = newPassword
     }
 
-    fun login(userInfo: UserInfo?) {
-        val currentEmail = email.value
-        val currentPassword = password.value
-
-        if (currentEmail.isNotBlank() && currentPassword.isNotBlank() &&
-            currentEmail == userInfo?.id && currentPassword == userInfo.password
-        ) {
-            isLoginSuccessful.value = true
-        } else {
-            isLoginSuccessful.value = false
+    fun submitLogin(userInfo: LoginInfo) {
+        viewModelScope.launch {
+            loginRepository.postLogin(userInfo)
+                .onSuccess { response ->
+                    _loginState.emit(UiState.Success(response))
+                    _authToken.emit(response.token)
+                }
+                .onFailure { exception ->
+                    _loginState.emit(UiState.Failure("로그인 실패"))
+                }
         }
     }
 }
