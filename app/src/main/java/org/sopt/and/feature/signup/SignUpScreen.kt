@@ -1,5 +1,6 @@
 package org.sopt.and.feature.signup
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,6 +16,7 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,9 +31,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import org.sopt.and.R
+import org.sopt.and.UiState
 import org.sopt.and.component.CustomTextField
 import org.sopt.and.component.DescriptionText
 import org.sopt.and.component.DividerWithText
@@ -42,15 +45,15 @@ import org.sopt.and.util.extenstion.applyColorSpan
 
 @Composable
 fun SignUpScreen(navController: NavController) {
-    val viewModel: SignUpViewModel = viewModel()
+    val viewModel: SignUpViewModel = hiltViewModel()
 
     val signUpEmail by viewModel.email.collectAsState()
     val signUpPassword by viewModel.password.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
-
-    val isEmailValid by viewModel.isEmailValid.collectAsState()
-    val isPasswordValid by viewModel.isPasswordValid.collectAsState()
+    val signUpHobby by viewModel.hobby.collectAsState()
     val context = LocalContext.current
+
+    val signUpState by viewModel.signUpState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -109,7 +112,12 @@ fun SignUpScreen(navController: NavController) {
                 )
             }
             DescriptionText(stringResource(R.string.signup_password_description))
-
+            CustomTextField(
+                value = signUpHobby,
+                onValueChange = { viewModel.updateHobby(it) },
+                placeholder = "취미를 적어주세요"
+            )
+            DescriptionText("취미는 8자 이하여야 합니다")
             Spacer(modifier = Modifier.padding(top = 30.dp))
             DividerWithText(stringResource(R.string.login_join_with_social_account))
 
@@ -121,21 +129,37 @@ fun SignUpScreen(navController: NavController) {
             Spacer(modifier = Modifier.padding(top = 20.dp))
             DescriptionText(stringResource(R.string.login_join_social_account_description))
         }
-        Spacer(modifier = Modifier.weight(1f))
 
         NavigateToLogin(
             backgroundColor = buttonEnableBackgroundColor(signUpEmail, signUpPassword)
         ) {
-            if (isEmailValid && isPasswordValid) {
+            val userInfo = UserInfo(
+                userName = signUpEmail,
+                password = signUpPassword,
+                hobby = signUpHobby
+            )
 
-                val userInfo = UserInfo(id = signUpEmail, password = signUpPassword)
-                navController.currentBackStackEntry?.arguments?.putParcelable("userInfo", userInfo)
-
-                navController.navigate("login")
-            } else {
-                context.showToast(context.getString(R.string.signup_login_error_message))
-            }
+            viewModel.submitSignUp(userInfo)
         }
+
+        when (val state = signUpState) {
+            is UiState.Success -> {
+                val response = state.data
+                LaunchedEffect(response) {
+                    navController.navigate("login") {
+                        popUpTo("signup") { inclusive = true }
+                    }
+                }
+            }
+
+            is UiState.Failure -> {
+                context.showToast(state.errorMessage)
+                Log.d("hi", state.errorMessage)
+            }
+
+            else -> Unit
+        }
+
     }
 }
 
