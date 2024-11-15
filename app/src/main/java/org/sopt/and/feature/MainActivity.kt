@@ -7,14 +7,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dagger.hilt.android.AndroidEntryPoint
 import org.sopt.and.feature.login.LoginScreen
-import org.sopt.and.feature.model.UserInfo
 import org.sopt.and.feature.mypage.MyPageScreen
-import org.sopt.and.feature.mypage.MyPageViewModel
 import org.sopt.and.feature.signup.SignUpScreen
 import org.sopt.and.ui.theme.ANDANDROIDTheme
 
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,13 +31,7 @@ class MainActivity : ComponentActivity() {
                         SignUpScreen(navController)
                     }
                     composable(ScreenRoute.MYPAGE.route) {
-                        val userInfo =
-                            navController.previousBackStackEntry?.arguments?.getParcelable<UserInfo>(
-                                "userInfo"
-                            )
-                        if (userInfo != null) {
-                            MyPageScreen(userInfo = userInfo, viewModel = MyPageViewModel())
-                        }
+                        MyPageScreen()
                     }
                 }
             }
