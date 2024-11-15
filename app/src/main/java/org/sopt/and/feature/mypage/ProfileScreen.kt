@@ -1,5 +1,7 @@
 package org.sopt.and.feature.mypage
 
+import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -13,23 +15,36 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import org.sopt.and.R
 
 @Composable
-fun ProfileScreen(viewModel: MyPageViewModel) {
-    val userName by viewModel.email.collectAsState()
+fun ProfileScreen() {
+    val viewModel: MyPageViewModel = hiltViewModel()
+    val hobby by viewModel.hobby.collectAsState()
+    val context = LocalContext.current
 
+    LaunchedEffect(Unit) {
+        val token = getAuthToken(context)
+        if (token != null) {
+            viewModel.loadHobby(token)
+        } else {
+            Log.e("MyPageScreen", "토근 못 찾음")
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -48,7 +63,7 @@ fun ProfileScreen(viewModel: MyPageViewModel) {
                 alignment = Alignment.CenterStart
             )
             Text(
-                "$userName" + stringResource(R.string.person),
+                hobby ?: "찾을 수 없습니다",
                 color = Color.White,
                 modifier = Modifier
                     .weight(1f)
@@ -74,6 +89,11 @@ fun ProfileScreen(viewModel: MyPageViewModel) {
             stringResource(R.string.profile_no_interest_program)
         )
     }
+}
+
+fun getAuthToken(context: Context): String? {
+    val sharedPreferences = context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+    return sharedPreferences.getString("auth_token", null)
 }
 
 @Composable
