@@ -8,7 +8,7 @@ import retrofit2.http.Header
 
 interface MyPageService {
     @GET("/user/my-hobby")
-    fun getMyHobby(
+    suspend fun getMyHobby(
         @Header("token") token: String
-    ): Call<BaseResponse<ResponseMyHobbyDto>>
+    ): BaseResponse<ResponseMyHobbyDto>
 }
