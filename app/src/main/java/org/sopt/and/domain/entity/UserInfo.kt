@@ -1,4 +1,4 @@
-package org.sopt.and.feature.model
+package org.sopt.and.domain.entity
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
