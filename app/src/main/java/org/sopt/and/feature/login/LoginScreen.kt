@@ -44,9 +44,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import org.sopt.and.R
 import org.sopt.and.UiState
-import org.sopt.and.component.CustomTextField
 import org.sopt.and.component.DescriptionText
 import org.sopt.and.component.DividerWithText
+import org.sopt.and.component.textfield.CustomEmailTextField
+import org.sopt.and.component.textfield.CustomPwTextField
 import org.sopt.and.feature.model.LoginInfo
 import org.sopt.and.ui.theme.ANDANDROIDTheme
 
@@ -69,7 +70,7 @@ fun LoginScreen(navController: NavController) {
     ) {
         LoginTopBar()
         Spacer(modifier = Modifier.padding(top = 30.dp))
-        CustomTextField(
+        CustomEmailTextField(
             value = loginEmail,
             onValueChange = { viewModel.updateEmail(it) },
             placeholder = stringResource(R.string.login_email_id)
@@ -79,12 +80,12 @@ fun LoginScreen(navController: NavController) {
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.CenterEnd
         ) {
-            CustomTextField(
+            CustomPwTextField(
                 value = loginPassword,
                 onValueChange = { viewModel.updatePassword(it) },
                 placeholder = stringResource(R.string.login_setting_password),
-                passwordVisible = passwordVisible,
-                padding = PaddingValues(vertical = 10.dp)
+//                passwordVisible = passwordVisible,
+//                padding = PaddingValues(vertical = 10.dp)
             )
             Text(
                 text = if (passwordVisible) "hide" else "show",

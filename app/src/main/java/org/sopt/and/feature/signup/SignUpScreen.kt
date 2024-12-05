@@ -35,9 +35,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import org.sopt.and.R
 import org.sopt.and.UiState
-import org.sopt.and.component.CustomTextField
 import org.sopt.and.component.DescriptionText
 import org.sopt.and.component.DividerWithText
+import org.sopt.and.component.textfield.CustomEmailTextField
+import org.sopt.and.component.textfield.CustomPwTextField
 import org.sopt.and.core.showToast
 import org.sopt.and.feature.model.UserInfo
 import org.sopt.and.ui.theme.ANDANDROIDTheme
@@ -84,7 +85,7 @@ fun SignUpScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.padding(top = 20.dp))
 
-            CustomTextField(
+            CustomEmailTextField(
                 value = signUpEmail,
                 onValueChange = { viewModel.updateEmail(it) },
                 placeholder = "wavve@example.com"
@@ -97,11 +98,11 @@ fun SignUpScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.CenterEnd
             ) {
-                CustomTextField(
+                CustomPwTextField(
                     value = signUpPassword,
                     onValueChange = { viewModel.updatePassword(it) },
                     placeholder = stringResource(R.string.login_setting_password),
-                    passwordVisible = passwordVisible
+//                    passwordVisible = passwordVisible
                 )
                 Text(
                     text = if (passwordVisible) "hide" else "show",
@@ -112,7 +113,7 @@ fun SignUpScreen(navController: NavController) {
                 )
             }
             DescriptionText(stringResource(R.string.signup_password_description))
-            CustomTextField(
+            CustomEmailTextField(
                 value = signUpHobby,
                 onValueChange = { viewModel.updateHobby(it) },
                 placeholder = "취미를 적어주세요"
