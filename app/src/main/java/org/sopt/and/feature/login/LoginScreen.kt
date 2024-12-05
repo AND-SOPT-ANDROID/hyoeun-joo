@@ -1,5 +1,6 @@
 package org.sopt.and.feature.login
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,7 +28,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,53 +40,35 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import org.sopt.and.R
-import org.sopt.and.component.CustomHeader
+import org.sopt.and.UiState
 import org.sopt.and.component.DescriptionText
 import org.sopt.and.component.DividerWithText
-import org.sopt.and.component.textfield.CustomPwTextField
 import org.sopt.and.component.textfield.CustomEmailTextField
-import org.sopt.and.feature.model.UserInfo
+import org.sopt.and.component.textfield.CustomPwTextField
+import org.sopt.and.feature.model.LoginInfo
 import org.sopt.and.ui.theme.ANDANDROIDTheme
 
 @Composable
 fun LoginScreen(navController: NavController) {
-    val viewModel: LoginViewModel = viewModel()
+    val viewModel: LoginViewModel = hiltViewModel()
 
     val loginEmail by viewModel.email.collectAsState()
     val loginPassword by viewModel.password.collectAsState()
-    val isLoginSuccessful by viewModel.isLoginSuccessful.collectAsState()
+    var passwordVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
-
+    val loginState by viewModel.loginState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val userInfo =
-        navController.previousBackStackEntry?.arguments?.getParcelable<UserInfo>("userInfo")
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color(0xFF1B1B1B))
             .padding(horizontal = 10.dp)
     ) {
-        CustomHeader(
-            startIcon = {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_back_left_white_24),
-                    contentDescription = null,
-                    modifier = Modifier.padding(vertical = 16.dp) // 적절한 패딩 설정
-                )
-            },
-            centerContent = {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_logo), // 중앙에 표시할 이미지
-                    contentDescription = "Logo",
-                    modifier = Modifier
-                        .fillMaxWidth(0.4f)
-                        .aspectRatio(264f / 116f)
-                )
-            },
-        )
+        LoginTopBar()
         Spacer(modifier = Modifier.padding(top = 30.dp))
         CustomEmailTextField(
             value = loginEmail,
@@ -91,36 +76,59 @@ fun LoginScreen(navController: NavController) {
             placeholder = stringResource(R.string.login_email_id)
         )
         Spacer(modifier = Modifier.padding(top = 10.dp))
-
-        CustomPwTextField(
-            value = loginPassword,
-            onValueChange = { viewModel.updatePassword(it) },
-            placeholder = stringResource(R.string.login_setting_password),
-            modifier = Modifier.padding(vertical = 10.dp)
-        )
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            CustomPwTextField(
+                value = loginPassword,
+                onValueChange = { viewModel.updatePassword(it) },
+                placeholder = stringResource(R.string.login_setting_password),
+//                passwordVisible = passwordVisible,
+//                padding = PaddingValues(vertical = 10.dp)
+            )
+            Text(
+                text = if (passwordVisible) "hide" else "show",
+                color = Color.White,
+                modifier = Modifier
+                    .padding(end = 10.dp)
+                    .clickable { passwordVisible = !passwordVisible }
+            )
+        }
         Spacer(modifier = Modifier.padding(top = 30.dp))
 
         NavigateToMain {
-            viewModel.login(userInfo)
+            val userInfo = LoginInfo(loginEmail, loginPassword)
+            viewModel.submitLogin(userInfo)
         }
 
-        LaunchedEffect(isLoginSuccessful) {
-            isLoginSuccessful.let {
-                if (it) {
-                    snackbarHostState.showSnackbar(context.getString(R.string.login_success))
-                    navController.currentBackStackEntry?.arguments?.putParcelable(
-                        "userInfo",
-                        userInfo
-                    )
-                    navController.navigate("mypage")
-                } else {
-                    snackbarHostState.showSnackbar(context.getString(R.string.login_no_member_info))
+        when (val state = loginState) {
+            is UiState.Success -> {
+                LaunchedEffect(state.data) {
+                    val authToken = state.data?.token
+                    if (authToken != null) {
+                        snackbarHostState.showSnackbar(context.getString(R.string.login_success))
+                        saveAuthToken(context, authToken)
+                        navController.navigate("mypage") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    } else {
+                        snackbarHostState.showSnackbar("로그인 실패")
+                    }
                 }
             }
+
+            is UiState.Failure -> {
+                LaunchedEffect(state.errorMessage) {
+                    snackbarHostState.showSnackbar(state.errorMessage)
+                }
+            }
+
+            else -> Unit
         }
 
         Spacer(modifier = Modifier.padding(top = 20.dp))
-        FindIdPwOrSignUp(
+        ThreeTextsWithDividers(
             modifier = Modifier.fillMaxWidth(),
             stringResource(R.string.login_find_id),
             stringResource(R.string.login_setting_password_again),
@@ -135,6 +143,37 @@ fun LoginScreen(navController: NavController) {
         Spacer(modifier = Modifier.padding(top = 20.dp))
         DescriptionText(stringResource(R.string.login_join_social_account_description))
         SnackbarHost(hostState = snackbarHostState)
+    }
+}
+
+fun saveAuthToken(context: Context, token: String) {
+    val sharedPreferences = context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+    sharedPreferences.edit().putString("auth_token", token).apply()
+}
+
+@Composable
+fun LoginTopBar() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp)
+            .background(color = Color(0xFF1B1B1B))
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_back_left_white_24),
+            contentDescription = null,
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(vertical = 16.dp)
+        )
+        Image(
+            painter = painterResource(id = R.drawable.ic_logo),
+            contentDescription = "Logo",
+            modifier = Modifier
+                .fillMaxWidth(0.4f)
+                .aspectRatio(264f / 116f)
+                .align(Alignment.Center)
+        )
     }
 }
 
@@ -156,11 +195,11 @@ fun NavigateToMain(onClick: () -> Unit) {
 }
 
 @Composable
-fun FindIdPwOrSignUp(
+fun ThreeTextsWithDividers(
     modifier: Modifier = Modifier,
-    findId: String,
-    reSettingPw: String,
-    signUp: String,
+    text1: String,
+    text2: String,
+    text3: String,
     onSignUpClick: () -> Unit,
 ) {
     Row(
@@ -171,7 +210,7 @@ fun FindIdPwOrSignUp(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = findId,
+            text = text1,
             color = Color(0xFFA5A5A5),
             fontSize = 12.sp
         )
@@ -188,7 +227,7 @@ fun FindIdPwOrSignUp(
         Spacer(modifier = Modifier.width(8.dp))
 
         Text(
-            text = reSettingPw,
+            text = text2,
             color = Color(0xFFA5A5A5),
             fontSize = 12.sp
         )
@@ -205,7 +244,7 @@ fun FindIdPwOrSignUp(
         Spacer(modifier = Modifier.width(8.dp))
 
         Text(
-            text = signUp,
+            text = text3,
             color = Color(0xFFA5A5A5),
             fontSize = 12.sp,
             modifier = Modifier.clickable { onSignUpClick() }

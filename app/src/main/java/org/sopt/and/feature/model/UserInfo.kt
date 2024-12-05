@@ -6,6 +6,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class UserInfo(
-    val id: String,
+    val userName: String,
     val password: String,
-): Parcelable
+    val hobby: String
+) : Parcelable
