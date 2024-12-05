@@ -12,27 +12,28 @@ class SignUpViewModel : ViewModel() {
     private val _password = MutableStateFlow("")
     val password: StateFlow<String> = _password
 
-    private val _isEmailValid = MutableStateFlow(false)
+    private val _isEmailValid = MutableStateFlow(true)
     val isEmailValid: StateFlow<Boolean> = _isEmailValid
 
-    private val _isPasswordValid = MutableStateFlow(false)
+    private val _isPasswordValid = MutableStateFlow(true)
     val isPasswordValid: StateFlow<Boolean> = _isPasswordValid
+
 
     fun updateEmail(newEmail: String) {
         _email.value = newEmail
-        _isEmailValid.value = isValidEmail(newEmail)
+        _isEmailValid.value = newEmail.isBlank() || isValidEmail(newEmail)
     }
 
     fun updatePassword(newPassword: String) {
         _password.value = newPassword
-        _isPasswordValid.value = isValidPassword(newPassword)
+        _isPasswordValid.value = newPassword.isBlank() || isValidPassword(newPassword)
     }
 
     fun isValidEmail(email: String): Boolean {
         return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
-    fun isValidPassword(password: String): Boolean {
+    private fun isValidPassword(password: String): Boolean {
         val regex =
             Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@\$!%*?&])[A-Za-z\\d@\$!%*?&]{8,20}$")
         return password.matches(regex)
