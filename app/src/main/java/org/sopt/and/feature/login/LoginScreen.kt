@@ -48,7 +48,7 @@ import org.sopt.and.component.DescriptionText
 import org.sopt.and.component.DividerWithText
 import org.sopt.and.component.textfield.CustomEmailTextField
 import org.sopt.and.component.textfield.CustomPwTextField
-import org.sopt.and.feature.model.LoginInfo
+import org.sopt.and.domain.entity.LoginInfo
 import org.sopt.and.ui.theme.ANDANDROIDTheme
 
 @Composable

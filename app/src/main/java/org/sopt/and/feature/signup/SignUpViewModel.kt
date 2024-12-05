@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.sopt.and.UiState
 import org.sopt.and.domain.repository.SignUpRepository
-import org.sopt.and.feature.model.ResponseSignUpModel
-import org.sopt.and.feature.model.UserInfo
+import org.sopt.and.domain.entity.UserNumber
+import org.sopt.and.domain.entity.UserInfo
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,8 +26,8 @@ class SignUpViewModel @Inject constructor(
     private val _hobby = MutableStateFlow("")
     val hobby: StateFlow<String> = _hobby
 
-    private val _signUpState = MutableStateFlow<UiState<ResponseSignUpModel>>(UiState.Loading)
-    val signUpState: StateFlow<UiState<ResponseSignUpModel>> = _signUpState
+    private val _signUpState = MutableStateFlow<UiState<UserNumber>>(UiState.Loading)
+    val signUpState: StateFlow<UiState<UserNumber>> = _signUpState
 
     fun updateEmail(newEmail: String) {
         _signUpState.value = UiState.Loading

@@ -1,7 +1,7 @@
 package org.sopt.and.domain.repository
 
-import org.sopt.and.feature.model.ResponseMyHobbyModel
+import org.sopt.and.domain.entity.Hobby
 
 interface MyPageRepository {
-    suspend fun getMyHobby(token: String): Result<ResponseMyHobbyModel>
+    suspend fun getMyHobby(token: String): Result<Hobby>
 }

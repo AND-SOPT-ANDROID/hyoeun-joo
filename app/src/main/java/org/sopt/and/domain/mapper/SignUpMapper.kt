@@ -2,8 +2,8 @@ package org.sopt.and.domain.mapper
 
 import org.sopt.and.data.dto.request.RequestSignUpDto
 import org.sopt.and.data.dto.response.ResponseSignUpDto
-import org.sopt.and.feature.model.ResponseSignUpModel
-import org.sopt.and.feature.model.UserInfo
+import org.sopt.and.domain.entity.UserNumber
+import org.sopt.and.domain.entity.UserInfo
 
 fun UserInfo.toRequestSignUp(): RequestSignUpDto = RequestSignUpDto(
     userName = this.userName,
@@ -11,6 +11,6 @@ fun UserInfo.toRequestSignUp(): RequestSignUpDto = RequestSignUpDto(
     hobby = this.hobby
 )
 
-fun ResponseSignUpDto.toResponseSignUpModel(): ResponseSignUpModel = ResponseSignUpModel(
+fun ResponseSignUpDto.toResponseSignUpModel(): UserNumber = UserNumber(
     userNumber = this.userNumber.toString(),
 )

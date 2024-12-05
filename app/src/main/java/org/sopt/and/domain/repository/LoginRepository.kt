@@ -1,8 +1,8 @@
 package org.sopt.and.domain.repository
 
-import org.sopt.and.feature.model.LoginInfo
-import org.sopt.and.feature.model.ResponseLoginModel
+import org.sopt.and.domain.entity.LoginInfo
+import org.sopt.and.domain.entity.Token
 
 interface LoginRepository {
-    suspend fun postLogin(user: LoginInfo): Result<ResponseLoginModel>
+    suspend fun postLogin(user: LoginInfo): Result<Token>
 }
