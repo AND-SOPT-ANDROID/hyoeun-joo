@@ -1,6 +1,6 @@
 package org.sopt.and.feature.signup
 
-import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ButtonColors
@@ -33,33 +34,45 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import kotlinx.coroutines.flow.collectLatest
 import org.sopt.and.R
-import org.sopt.and.UiState
 import org.sopt.and.core.component.DescriptionText
 import org.sopt.and.core.component.DividerWithText
 import org.sopt.and.core.component.textfield.CustomEmailTextField
 import org.sopt.and.core.component.textfield.CustomPwTextField
-import org.sopt.and.core.showToast
-import org.sopt.and.domain.entity.UserInfo
+import org.sopt.and.feature.signup.model.SignUpContract
+import org.sopt.and.feature.signup.viewmodel.SignUpViewModel
 import org.sopt.and.ui.theme.ANDANDROIDTheme
 import org.sopt.and.util.extenstion.applyColorSpan
 
+
 @Composable
-fun SignUpScreen(navController: NavController) {
-    val viewModel: SignUpViewModel = hiltViewModel()
-
-    val signUpEmail by viewModel.email.collectAsState()
-    val signUpPassword by viewModel.password.collectAsState()
-    var passwordVisible by remember { mutableStateOf(false) }
-    val signUpHobby by viewModel.hobby.collectAsState()
+fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = hiltViewModel()) {
+    val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    var passwordVisible by remember { mutableStateOf(false) }
 
-    val signUpState by viewModel.signUpState.collectAsState()
+    LaunchedEffect(Unit) {
+        viewModel.sideEffect.collectLatest { sideEffect ->
+            when (sideEffect) {
+                is SignUpContract.SignUpSideEffect.NavigateToLogin -> {
+                    navController.navigate("login") {
+                        popUpTo("signup") { inclusive = true }
+                    }
+                }
+
+                is SignUpContract.SignUpSideEffect.ShowSnackbar -> {
+                    Toast.makeText(context, sideEffect.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color(0xFF1B1B1B))
+            .padding(horizontal = 10.dp)
     ) {
         Column(
             modifier = Modifier
@@ -67,7 +80,7 @@ fun SignUpScreen(navController: NavController) {
                 .padding(horizontal = 10.dp)
         ) {
             SignUpTopBar()
-            Spacer(modifier = Modifier.padding(top = 10.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             BasicText(
                 text = stringResource(R.string.signup_join_with_email_password).applyColorSpan(
@@ -83,26 +96,31 @@ fun SignUpScreen(navController: NavController) {
                     color = Color.White,
                 )
             )
-            Spacer(modifier = Modifier.padding(top = 20.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             CustomEmailTextField(
-                value = signUpEmail,
-                onValueChange = { viewModel.updateEmail(it) },
+                value = uiState.email,
+                onValueChange = { viewModel.setEvent(SignUpContract.SignUpEvent.UpdateEmail(it)) },
                 placeholder = "wavve@example.com"
             )
             DescriptionText(stringResource(R.string.signup_id_description))
 
-            Spacer(modifier = Modifier.padding(top = 20.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 CustomPwTextField(
-                    value = signUpPassword,
-                    onValueChange = { viewModel.updatePassword(it) },
-                    placeholder = stringResource(R.string.login_setting_password),
-//                    passwordVisible = passwordVisible
+                    value = uiState.password,
+                    onValueChange = {
+                        viewModel.setEvent(
+                            SignUpContract.SignUpEvent.UpdatePassword(
+                                it
+                            )
+                        )
+                    },
+                    placeholder = stringResource(R.string.login_setting_password)
                 )
                 Text(
                     text = if (passwordVisible) "hide" else "show",
@@ -113,57 +131,33 @@ fun SignUpScreen(navController: NavController) {
                 )
             }
             DescriptionText(stringResource(R.string.signup_password_description))
+
             CustomEmailTextField(
-                value = signUpHobby,
-                onValueChange = { viewModel.updateHobby(it) },
+                value = uiState.hobby,
+                onValueChange = { viewModel.setEvent(SignUpContract.SignUpEvent.UpdateHobby(it)) },
                 placeholder = "취미를 적어주세요"
             )
             DescriptionText("취미는 8자 이하여야 합니다")
-            Spacer(modifier = Modifier.padding(top = 30.dp))
-            DividerWithText(stringResource(R.string.login_join_with_social_account))
+            Spacer(modifier = Modifier.height(30.dp))
 
+            DividerWithText(stringResource(R.string.login_join_with_social_account))
             Image(
                 painter = painterResource(id = R.drawable.ic_social_login),
-                contentDescription = "Social Login",
+                contentDescription = "Social Login"
             )
 
-            Spacer(modifier = Modifier.padding(top = 20.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             DescriptionText(stringResource(R.string.login_join_social_account_description))
         }
 
         NavigateToLogin(
-            backgroundColor = buttonEnableBackgroundColor(signUpEmail, signUpPassword)
+            backgroundColor = buttonEnableBackgroundColor(uiState.email, uiState.password)
         ) {
-            val userInfo = UserInfo(
-                userName = signUpEmail,
-                password = signUpPassword,
-                hobby = signUpHobby
-            )
-
-            viewModel.submitSignUp(userInfo)
-        }
-
-        when (val state = signUpState) {
-            is UiState.Success -> {
-                val response = state.data
-                LaunchedEffect(response) {
-                    navController.navigate("login") {
-                        popUpTo("signup") { inclusive = true }
-                    }
-                }
-            }
-
-            is UiState.Failure -> {
-                context.showToast(state.errorMessage)
-                Log.d("hi", state.errorMessage)
-            }
-
-            else -> Unit
+            viewModel.setEvent(SignUpContract.SignUpEvent.SubmitSignUp)
         }
 
     }
 }
-
 
 @Composable
 fun SignUpTopBar() {
