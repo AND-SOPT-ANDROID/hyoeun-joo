@@ -19,7 +19,7 @@ class LoginContract {
     }
 
     sealed class LoginSideEffect : UiSideEffect {
-        data object NavigateToMyPage : LoginSideEffect()
+        data class NavigateToMyPageWithToken(val token: String) : LoginSideEffect()
         data class ShowSnackbar(val message: String) : LoginSideEffect()
     }
 }

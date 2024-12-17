@@ -31,8 +31,8 @@ class MyPageViewModel @Inject constructor(
                     setState { copy(hobby = response.hobby, isLoading = false) }
                 }
                 .onFailure {
-                    setState { copy(hobby = "", isLoading = false, error = "데이터를 불러오는데 실패했습니다.") }
-                    setSideEffect { MyPageSideEffect.ShowErrorToast("데이터를 불러오는데 실패했습니다.") }
+                    setState { copy(hobby = "", isLoading = false) }
+                    setSideEffect { MyPageSideEffect.ShowErrorToast("불러오지 못함") }
                 }
         }
     }

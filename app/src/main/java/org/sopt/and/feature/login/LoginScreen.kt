@@ -1,5 +1,6 @@
 package org.sopt.and.feature.login
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -61,7 +62,8 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collectLatest { sideEffect ->
             when (sideEffect) {
-                is LoginContract.LoginSideEffect.NavigateToMyPage -> {
+                is LoginContract.LoginSideEffect.NavigateToMyPageWithToken -> {
+                    saveAuthToken(context, sideEffect.token)
                     navController.navigate("mypage") {
                         popUpTo("login") { inclusive = true }
                     }
@@ -143,10 +145,10 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
     }
 }
 
-//fun saveAuthToken(context: Context, token: String) {
-//    val sharedPreferences = context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
-//    sharedPreferences.edit().putString("auth_token", token).apply()
-//}
+fun saveAuthToken(context: Context, token: String) {
+    val sharedPreferences = context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+    sharedPreferences.edit().putString("auth_token", token).apply()
+}
 
 @Composable
 fun LoginTopBar() {

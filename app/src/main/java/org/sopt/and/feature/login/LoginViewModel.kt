@@ -31,7 +31,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             loginRepository.postLogin(LoginInfo(email, password))
                 .onSuccess { response ->
-                    setSideEffect { LoginSideEffect.NavigateToMyPage }
+                    setSideEffect { LoginSideEffect.NavigateToMyPageWithToken(response.token) }
                 }
                 .onFailure {
                     setSideEffect { LoginSideEffect.ShowSnackbar("로그인 실패") }

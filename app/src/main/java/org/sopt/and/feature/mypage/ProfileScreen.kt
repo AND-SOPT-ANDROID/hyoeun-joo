@@ -45,7 +45,7 @@ fun ProfileScreen(viewModel: MyPageViewModel = hiltViewModel()) {
         if (token != null) {
             viewModel.setEvent(MyPageContract.MyPageEvent.LoadHobby(token))
         } else {
-            Log.e("ProfileScreen", "토큰 못 찾음")
+            Log.d("ProfileScreen", "토큰 못 찾음")
         }
     }
 
