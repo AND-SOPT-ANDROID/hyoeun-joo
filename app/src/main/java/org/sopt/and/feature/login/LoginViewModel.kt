@@ -1,51 +1,40 @@
-package org.sopt.and.feature.login
+package org.sopt.and.feature.login.viewmodel
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import org.sopt.and.UiState
-import org.sopt.and.domain.repository.LoginRepository
+import org.sopt.and.core.component.BaseViewModel
 import org.sopt.and.domain.entity.LoginInfo
-import org.sopt.and.domain.entity.Token
+import org.sopt.and.domain.repository.LoginRepository
+import org.sopt.and.feature.login.model.LoginContract.LoginEvent
+import org.sopt.and.feature.login.model.LoginContract.LoginSideEffect
+import org.sopt.and.feature.login.model.LoginContract.LoginState
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val loginRepository: LoginRepository
-) : ViewModel() {
+) : BaseViewModel<LoginState, LoginSideEffect, LoginEvent>() {
 
-    private val _email = MutableStateFlow("")
-    val email: StateFlow<String> = _email
+    override fun createInitialState() = LoginState()
 
-    private val _password = MutableStateFlow("")
-    val password: StateFlow<String> = _password
-
-    private val _loginState = MutableStateFlow<UiState<Token>>(UiState.Loading)
-    val loginState: StateFlow<UiState<Token>> = _loginState
-
-    private val _authToken = MutableStateFlow<String?>(null)
-    val authToken: StateFlow<String?> = _authToken
-
-    fun updateEmail(newEmail: String) {
-        _email.value = newEmail
+    override suspend fun handleEvent(event: LoginEvent) {
+        when (event) {
+            is LoginEvent.UpdateEmail -> setState { copy(email = event.email) }
+            is LoginEvent.UpdatePassword -> setState { copy(password = event.password) }
+            is LoginEvent.SubmitLogin -> submitLogin(event.email, event.password)
+        }
     }
 
-    fun updatePassword(newPassword: String) {
-        _password.value = newPassword
-    }
-
-    fun submitLogin(userInfo: LoginInfo) {
+    private fun submitLogin(email: String, password: String) {
+        setState { copy(isLoading = true, errorMessage = null) }
         viewModelScope.launch {
-            loginRepository.postLogin(userInfo)
+            loginRepository.postLogin(LoginInfo(email, password))
                 .onSuccess { response ->
-                    _loginState.emit(UiState.Success(response))
-                    _authToken.emit(response.token)
+                    setSideEffect { LoginSideEffect.NavigateToMyPage }
                 }
-                .onFailure { exception ->
-                    _loginState.emit(UiState.Failure("로그인 실패"))
+                .onFailure {
+                    setSideEffect { LoginSideEffect.ShowSnackbar("로그인 실패") }
                 }
         }
     }

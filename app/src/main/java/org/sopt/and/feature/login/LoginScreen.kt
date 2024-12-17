@@ -1,6 +1,5 @@
 package org.sopt.and.feature.login
 
-import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -42,25 +41,38 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import kotlinx.coroutines.flow.collectLatest
 import org.sopt.and.R
-import org.sopt.and.UiState
 import org.sopt.and.core.component.DescriptionText
 import org.sopt.and.core.component.DividerWithText
 import org.sopt.and.core.component.textfield.CustomEmailTextField
 import org.sopt.and.core.component.textfield.CustomPwTextField
-import org.sopt.and.domain.entity.LoginInfo
+import org.sopt.and.feature.login.model.LoginContract
+import org.sopt.and.feature.login.viewmodel.LoginViewModel
 import org.sopt.and.ui.theme.ANDANDROIDTheme
 
 @Composable
-fun LoginScreen(navController: NavController) {
-    val viewModel: LoginViewModel = hiltViewModel()
-
-    val loginEmail by viewModel.email.collectAsState()
-    val loginPassword by viewModel.password.collectAsState()
-    var passwordVisible by remember { mutableStateOf(false) }
+fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltViewModel()) {
+    val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    val loginState by viewModel.loginState.collectAsState()
+    var passwordVisible by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.sideEffect.collectLatest { sideEffect ->
+            when (sideEffect) {
+                is LoginContract.LoginSideEffect.NavigateToMyPage -> {
+                    navController.navigate("mypage") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
+
+                is LoginContract.LoginSideEffect.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(sideEffect.message)
+                }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -69,23 +81,24 @@ fun LoginScreen(navController: NavController) {
             .padding(horizontal = 10.dp)
     ) {
         LoginTopBar()
-        Spacer(modifier = Modifier.padding(top = 30.dp))
+        Spacer(modifier = Modifier.height(30.dp))
+
         CustomEmailTextField(
-            value = loginEmail,
-            onValueChange = { viewModel.updateEmail(it) },
+            value = uiState.email,
+            onValueChange = { viewModel.setEvent(LoginContract.LoginEvent.UpdateEmail(it)) },
             placeholder = stringResource(R.string.login_email_id)
         )
-        Spacer(modifier = Modifier.padding(top = 10.dp))
+
+        Spacer(modifier = Modifier.height(10.dp))
+
         Box(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.CenterEnd
         ) {
             CustomPwTextField(
-                value = loginPassword,
-                onValueChange = { viewModel.updatePassword(it) },
-                placeholder = stringResource(R.string.login_setting_password),
-//                passwordVisible = passwordVisible,
-//                padding = PaddingValues(vertical = 10.dp)
+                value = uiState.password,
+                onValueChange = { viewModel.setEvent(LoginContract.LoginEvent.UpdatePassword(it)) },
+                placeholder = stringResource(R.string.login_setting_password)
             )
             Text(
                 text = if (passwordVisible) "hide" else "show",
@@ -95,61 +108,45 @@ fun LoginScreen(navController: NavController) {
                     .clickable { passwordVisible = !passwordVisible }
             )
         }
-        Spacer(modifier = Modifier.padding(top = 30.dp))
+
+        Spacer(modifier = Modifier.height(30.dp))
 
         NavigateToMain {
-            val userInfo = LoginInfo(loginEmail, loginPassword)
-            viewModel.submitLogin(userInfo)
+            viewModel.setEvent(
+                LoginContract.LoginEvent.SubmitLogin(
+                    uiState.email,
+                    uiState.password
+                )
+            )
         }
+        Spacer(modifier = Modifier.height(20.dp))
 
-        when (val state = loginState) {
-            is UiState.Success -> {
-                LaunchedEffect(state.data) {
-                    val authToken = state.data?.token
-                    if (authToken != null) {
-                        snackbarHostState.showSnackbar(context.getString(R.string.login_success))
-                        saveAuthToken(context, authToken)
-                        navController.navigate("mypage") {
-                            popUpTo("login") { inclusive = true }
-                        }
-                    } else {
-                        snackbarHostState.showSnackbar("로그인 실패")
-                    }
-                }
-            }
-
-            is UiState.Failure -> {
-                LaunchedEffect(state.errorMessage) {
-                    snackbarHostState.showSnackbar(state.errorMessage)
-                }
-            }
-
-            else -> Unit
-        }
-
-        Spacer(modifier = Modifier.padding(top = 20.dp))
         ThreeTextsWithDividers(
             modifier = Modifier.fillMaxWidth(),
-            stringResource(R.string.login_find_id),
-            stringResource(R.string.login_setting_password_again),
-            stringResource(R.string.sign_up),
+            text1 = stringResource(R.string.login_find_id),
+            text2 = stringResource(R.string.login_setting_password_again),
+            text3 = stringResource(R.string.sign_up),
             onSignUpClick = { navController.navigate("signup") }
         )
+
         DividerWithText(stringResource(R.string.login_join_with_social_account))
+
         Image(
             painter = painterResource(id = R.drawable.ic_social_login),
-            contentDescription = "Social Login",
+            contentDescription = "Social Login"
         )
-        Spacer(modifier = Modifier.padding(top = 20.dp))
+
+        Spacer(modifier = Modifier.height(20.dp))
+
         DescriptionText(stringResource(R.string.login_join_social_account_description))
         SnackbarHost(hostState = snackbarHostState)
     }
 }
 
-fun saveAuthToken(context: Context, token: String) {
-    val sharedPreferences = context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
-    sharedPreferences.edit().putString("auth_token", token).apply()
-}
+//fun saveAuthToken(context: Context, token: String) {
+//    val sharedPreferences = context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+//    sharedPreferences.edit().putString("auth_token", token).apply()
+//}
 
 @Composable
 fun LoginTopBar() {
