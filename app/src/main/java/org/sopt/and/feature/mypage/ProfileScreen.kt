@@ -2,6 +2,7 @@ package org.sopt.and.feature.mypage
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -29,26 +30,39 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.flow.collectLatest
 import org.sopt.and.R
+import org.sopt.and.feature.mypage.model.MyPageContract
+import org.sopt.and.feature.mypage.viewmodel.MyPageViewModel
 
 @Composable
-fun ProfileScreen() {
-    val viewModel: MyPageViewModel = hiltViewModel()
-    val hobby by viewModel.hobby.collectAsState()
+fun ProfileScreen(viewModel: MyPageViewModel = hiltViewModel()) {
+    val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         val token = getAuthToken(context)
         if (token != null) {
-            viewModel.loadHobby(token)
+            viewModel.setEvent(MyPageContract.MyPageEvent.LoadHobby(token))
         } else {
-            Log.e("MyPageScreen", "토근 못 찾음")
+            Log.d("ProfileScreen", "토큰 못 찾음")
         }
     }
+
+    LaunchedEffect(Unit) {
+        viewModel.sideEffect.collectLatest { sideEffect ->
+            when (sideEffect) {
+                is MyPageContract.MyPageSideEffect.ShowErrorToast -> {
+                    Toast.makeText(context, sideEffect.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
     ) {
         Row(
             modifier = Modifier
@@ -63,30 +77,35 @@ fun ProfileScreen() {
                 alignment = Alignment.CenterStart
             )
             Text(
-                hobby ?: "찾을 수 없습니다",
+                text = when {
+                    uiState.isLoading -> "로딩 중..."
+                    uiState.hobby.isNotEmpty() -> uiState.hobby
+                    else -> "찾을 수 없습니다"
+                },
                 color = Color.White,
+                fontSize = 20.sp,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(end = 8.dp),
-                fontSize = 20.sp
+                    .padding(end = 8.dp)
             )
             Image(
                 painter = painterResource(id = R.drawable.ic_alarm),
-                contentDescription = "alarm",
+                contentDescription = "Alarm Icon",
                 modifier = Modifier.size(80.dp),
                 alignment = Alignment.CenterEnd
             )
         }
+
         MyPagePurchase(stringResource(R.string.profile_first_purchase_description))
         Spacer(modifier = Modifier.padding(top = 4.dp))
         MyPagePurchase(stringResource(R.string.profile_no_ticket))
         VideoList(
-            stringResource(R.string.profile_total_view_history),
-            stringResource(R.string.profile_no_view_history)
+            videoDescription = stringResource(R.string.profile_total_view_history),
+            emptyDescription = stringResource(R.string.profile_no_view_history)
         )
         VideoList(
-            stringResource(R.string.profile_interest_program),
-            stringResource(R.string.profile_no_interest_program)
+            videoDescription = stringResource(R.string.profile_interest_program),
+            emptyDescription = stringResource(R.string.profile_no_interest_program)
         )
     }
 }
