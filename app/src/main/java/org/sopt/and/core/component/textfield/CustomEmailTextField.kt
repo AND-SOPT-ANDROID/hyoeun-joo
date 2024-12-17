@@ -1,4 +1,4 @@
-package org.sopt.and.component.textfield
+package org.sopt.and.core.component.textfield
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border

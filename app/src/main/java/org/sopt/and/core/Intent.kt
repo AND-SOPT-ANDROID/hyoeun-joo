@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Parcelable
-import org.sopt.and.feature.model.UserInfo
+import org.sopt.and.domain.entity.UserInfo
 
 inline fun <reified T : Parcelable> Intent.getSafeParcelable(name: String): T? {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

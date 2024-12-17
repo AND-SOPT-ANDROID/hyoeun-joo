@@ -7,9 +7,9 @@ import dagger.hilt.components.SingletonComponent
 import org.sopt.and.domain.repository.LoginRepository
 import org.sopt.and.domain.repository.MyPageRepository
 import org.sopt.and.domain.repository.SignUpRepository
-import org.sopt.and.domain.repositoryimpl.LoginRepositoryImpl
-import org.sopt.and.domain.repositoryimpl.MyPageRepositoryImpl
-import org.sopt.and.domain.repositoryimpl.SignUpRepositoryImpl
+import org.sopt.and.data.repositoryimpl.LoginRepositoryImpl
+import org.sopt.and.data.repositoryimpl.MyPageRepositoryImpl
+import org.sopt.and.data.repositoryimpl.SignUpRepositoryImpl
 import javax.inject.Singleton
 
 @Module

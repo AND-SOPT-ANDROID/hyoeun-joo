@@ -1,12 +1,12 @@
-package org.sopt.and.domain.repositoryimpl
+package org.sopt.and.data.repositoryimpl
 
 import org.json.JSONObject
 import org.sopt.and.data.service.AuthService
 import org.sopt.and.domain.mapper.toRequestSignUp
 import org.sopt.and.domain.mapper.toResponseSignUpModel
 import org.sopt.and.domain.repository.SignUpRepository
-import org.sopt.and.feature.model.ResponseSignUpModel
-import org.sopt.and.feature.model.UserInfo
+import org.sopt.and.domain.entity.UserNumber
+import org.sopt.and.domain.entity.UserInfo
 import retrofit2.HttpException
 import javax.inject.Inject
 
@@ -14,7 +14,7 @@ class SignUpRepositoryImpl @Inject constructor(
     private val authService: AuthService
 ) : SignUpRepository {
 
-    override suspend fun postSignUp(user: UserInfo): Result<ResponseSignUpModel> {
+    override suspend fun postSignUp(user: UserInfo): Result<UserNumber> {
         return runCatching {
             val requestDto = user.toRequestSignUp()
             val response = authService.postSignUp(requestDto)
@@ -24,7 +24,7 @@ class SignUpRepositoryImpl @Inject constructor(
             requireNotNull(it)
         }.recoverCatching { throwable ->
             val errorMessage = throwable.handleThrowable()
-            ResponseSignUpModel(userNumber = null).apply {
+            UserNumber(userNumber = null).apply {
                 throw Exception(errorMessage)
             }
         }

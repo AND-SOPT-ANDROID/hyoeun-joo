@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.sopt.and.UiState
 import org.sopt.and.domain.repository.LoginRepository
-import org.sopt.and.feature.model.LoginInfo
-import org.sopt.and.feature.model.ResponseLoginModel
+import org.sopt.and.domain.entity.LoginInfo
+import org.sopt.and.domain.entity.Token
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,8 +23,8 @@ class LoginViewModel @Inject constructor(
     private val _password = MutableStateFlow("")
     val password: StateFlow<String> = _password
 
-    private val _loginState = MutableStateFlow<UiState<ResponseLoginModel>>(UiState.Loading)
-    val loginState: StateFlow<UiState<ResponseLoginModel>> = _loginState
+    private val _loginState = MutableStateFlow<UiState<Token>>(UiState.Loading)
+    val loginState: StateFlow<UiState<Token>> = _loginState
 
     private val _authToken = MutableStateFlow<String?>(null)
     val authToken: StateFlow<String?> = _authToken

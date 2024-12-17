@@ -2,8 +2,8 @@ package org.sopt.and.domain.mapper
 
 import org.sopt.and.data.dto.request.RequestLoginDto
 import org.sopt.and.data.dto.response.ResponseLoginDto
-import org.sopt.and.feature.model.LoginInfo
-import org.sopt.and.feature.model.ResponseLoginModel
+import org.sopt.and.domain.entity.LoginInfo
+import org.sopt.and.domain.entity.Token
 
 
 fun LoginInfo.toRequestLogin(): RequestLoginDto = RequestLoginDto(
@@ -11,6 +11,6 @@ fun LoginInfo.toRequestLogin(): RequestLoginDto = RequestLoginDto(
     password = this.password
 )
 
-fun ResponseLoginDto.toResponseLoginModel(): ResponseLoginModel = ResponseLoginModel(
+fun ResponseLoginDto.toResponseLoginModel(): Token = Token(
     token = this.token
 )
